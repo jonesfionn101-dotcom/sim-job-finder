@@ -1,0 +1,35 @@
+name: Draft a fix
+
+# Once a day, after the morning searches, try to draft ONE fix with GitHub's
+# free AI models. Nothing is ever sent: a passing fix is saved as a
+# "🔧 Fix draft – needs check" issue for Claude to review first.
+on:
+  schedule:
+    # Every 6 hours.
+    - cron: "30 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+  models: read
+
+# Never run two copies of the same search at once.
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  draft:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+      - name: Draft and test one fix
+        timeout-minutes: 55
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node autofix.mjs

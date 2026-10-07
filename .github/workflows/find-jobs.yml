@@ -1,0 +1,43 @@
+name: Find open-source jobs
+
+on:
+  schedule:
+    # Every 2 hours, day and night.
+    - cron: "7 */2 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+# Never run two copies of the same search at once.
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  find:
+    runs-on: ubuntu-latest
+    # Never let a stuck run hang until GitHub kills it after 6 hours.
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+
+      - id: finder
+        name: Search GitHub for matching jobs
+        env:
+          GITHUB_TOKEN: ${{ secrets.FINDER_TOKEN || github.token }}
+        run: node finder.mjs
+
+      - name: Post the shortlist as an issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BODY: ${{ steps.finder.outputs.body }}
+          COUNT: ${{ steps.finder.outputs.count }}
+        run: |
+          printf '%s\n' "$BODY" > body.md
+          bash .github/post-latest.sh "Job shortlist" "$COUNT found" body.md

@@ -1,0 +1,50 @@
+name: Search recorder
+
+# Writes a line in the pinned "Search recorder" issue whenever a search starts or
+# finishes. It is a separate workflow on purpose: if a search crashes or hits
+# its time limit, the recorder still runs and says so.
+on:
+  workflow_run:
+    workflows: ["Rules job search", "Find open-source jobs", "Find recruiting VTCs", "Draft a fix"]
+    types: [requested, completed]
+
+permissions:
+  issues: write
+
+# Never run two copies of the same search at once.
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  record:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Write to the recorder issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NAME: ${{ github.event.workflow_run.name }}
+          ACTION: ${{ github.event.action }}
+          RESULT: ${{ github.event.workflow_run.conclusion }}
+          URL: ${{ github.event.workflow_run.html_url }}
+          STARTED: ${{ github.event.workflow_run.run_started_at }}
+        run: |
+          now=$(TZ=Europe/Dublin date '+%d %b %H:%M')
+          if [ "$ACTION" = requested ]; then
+            line="▶️ **$NAME** started at $now Irish time. [Watch it live]($URL)"
+          else
+            took=$(( ( $(date +%s) - $(date -d "$STARTED" +%s) ) / 60 ))
+            case "$RESULT" in
+              success)   icon="✅"; what="finished OK" ;;
+              cancelled) icon="⏹️"; what="was stopped (time limit or cancelled)" ;;
+              timed_out) icon="⏱️"; what="hit its time limit" ;;
+              *)         icon="❌"; what="FAILED ($RESULT)" ;;
+            esac
+            line="$icon **$NAME** $what at $now Irish time, after $took min. [See what happened]($URL)"
+          fi
+          issue=$(gh issue list --repo "$GITHUB_REPOSITORY" --search "Search recorder in:title" --json number -q '.[0].number')
+          if [ -z "$issue" ]; then
+            issue=$(gh issue create --repo "$GITHUB_REPOSITORY" --title "📼 Search recorder (live log of every search run)" --body "Every automatic search writes here when it starts and finishes." | grep -o '[0-9]*$')
+          fi
+          gh issue comment "$issue" --repo "$GITHUB_REPOSITORY" --body "$line"

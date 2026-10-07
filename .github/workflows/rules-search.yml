@@ -1,0 +1,102 @@
+name: Rules job search
+
+on:
+  schedule:
+    # Every hour, day and night (public repos get unlimited Actions minutes).
+    - cron: "0 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+# Never run two copies of the same search at once.
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  clock:
+    runs-on: ubuntu-latest
+    outputs:
+      go: ${{ steps.clock.outputs.go }}
+    steps:
+      - id: clock
+        run: |
+          echo "go=yes" >> "$GITHUB_OUTPUT"
+
+  # The two searches run side by side, each with its own time limit, so a slow
+  # or stuck one can never hold the other up.
+  uk-communities:
+    needs: clock
+    if: needs.clock.outputs.go == 'yes'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - id: search
+        name: Search UK communities against the user's rules
+        timeout-minutes: 25
+        env:
+          TRIED_VTCS: ${{ secrets.TRIED_VTCS }}
+        run: node rules-search.mjs
+      - name: Post the results as an issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BODY: ${{ steps.search.outputs.body }}
+          COUNT: ${{ steps.search.outputs.count }}
+          STEP: ${{ steps.search.outputs.step }}
+        run: |
+          printf '%s\n' "$BODY" > rules-body.md
+          bash .github/post-latest.sh "UK VTC search" "$COUNT found, $STEP+ staff" rules-body.md
+
+  app-projects:
+    needs: clock
+    if: needs.clock.outputs.go == 'yes'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - id: apps
+        name: Search open-source app projects
+        timeout-minutes: 25
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node app-search.mjs
+      - name: Post the app projects as an issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BODY: ${{ steps.apps.outputs.body }}
+          COUNT: ${{ steps.apps.outputs.count }}
+        run: |
+          printf '%s\n' "$BODY" > app-body.md
+          bash .github/post-latest.sh "App project search" "$COUNT found" app-body.md
+
+  communities:
+    needs: clock
+    if: needs.clock.outputs.go == 'yes'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - id: comm
+        name: Search farming, sim and UK/Irish gaming communities
+        timeout-minutes: 10
+        run: node community-search.mjs
+      - name: Post the communities as an issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BODY: ${{ steps.comm.outputs.body }}
+          HIRING: ${{ steps.comm.outputs.hiring }}
+        run: |
+          printf '%s\n' "$BODY" > comm-body.md
+          bash .github/post-latest.sh "Community search" "$HIRING hiring" comm-body.md
