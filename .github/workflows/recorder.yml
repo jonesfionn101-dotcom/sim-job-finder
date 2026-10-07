@@ -11,11 +11,6 @@ on:
 permissions:
   issues: write
 
-# Never run two copies of the same search at once.
-concurrency:
-  group: ${{ github.workflow }}
-  cancel-in-progress: false
-
 jobs:
   record:
     runs-on: ubuntu-latest
