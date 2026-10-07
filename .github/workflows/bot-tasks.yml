@@ -1,0 +1,37 @@
+name: Work on bot-tasks
+
+# Every 2 hours, take the oldest open "bot-task" issue and try to fix it with
+# GitHub's free AI. Opens a pull request for review; never merges.
+on:
+  schedule:
+    - cron: "45 */2 * * *"
+  issues:
+    types: [labeled]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+  models: read
+
+# Never run two copies at once.
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  task:
+    if: github.event_name != 'issues' || github.event.label.name == 'bot-task'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - name: Try the oldest bot-task
+        timeout-minutes: 35
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node bot-tasks.mjs

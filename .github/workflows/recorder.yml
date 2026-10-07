@@ -5,7 +5,7 @@ name: Search recorder
 # its time limit, the recorder still runs and says so.
 on:
   workflow_run:
-    workflows: ["Rules job search", "Find open-source jobs", "Find recruiting VTCs", "Draft a fix"]
+    workflows: ["Rules job search", "Find open-source jobs", "Find recruiting VTCs", "Draft a fix", "Work on bot-tasks"]
     types: [requested, completed]
 
 permissions:
