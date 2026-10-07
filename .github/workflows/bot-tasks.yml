@@ -1,10 +1,10 @@
 name: Work on bot-tasks
 
-# Every 2 hours, take the oldest open "bot-task" issue and try to fix it with
+# Every hour (and straight after each task), take the oldest open "bot-task" issue and try to fix it with
 # GitHub's free AI. Opens a pull request for review; never merges.
 on:
   schedule:
-    - cron: "45 */2 * * *"
+    - cron: "45 * * * *"
   issues:
     types: [labeled]
   workflow_dispatch:
@@ -14,6 +14,7 @@ permissions:
   issues: write
   pull-requests: write
   models: read
+  actions: write
 
 # Never run two copies at once.
 concurrency:

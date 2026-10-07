@@ -5,14 +5,15 @@ name: Draft a fix
 # "🔧 Fix draft – needs check" issue for Claude to review first.
 on:
   schedule:
-    # Every 6 hours.
-    - cron: "30 */6 * * *"
+    # Every hour, so jobs keep getting worked on through the night.
+    - cron: "30 * * * *"
   workflow_dispatch:
 
 permissions:
   contents: read
   issues: write
   models: read
+  actions: write
 
 # Never run two copies of the same search at once.
 concurrency:

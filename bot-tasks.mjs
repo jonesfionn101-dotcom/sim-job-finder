@@ -94,7 +94,23 @@ async function main() {
   giveUp(issue, "GitHub's free AI could not produce a change that passed the checks in 3 tries.");
 }
 
-main().catch(error => {
-  console.error("bot-tasks failed:", error.message);
-  process.exit(1);
-});
+/** Keep going instead of idling: next bot-task if any are left, otherwise go find outside jobs. */
+function handOver() {
+  const left = JSON.parse(sh(`gh issue list --repo ${REPO} --state open --label bot-task --json labels --limit 50`))
+    .filter(t => !t.labels.some(l => l.name === "bot-tried")).length;
+  const next = left ? "bot-tasks.yml" : "autofix.yml";
+  trySh(`gh workflow run ${next} --repo ${REPO}`);
+  console.log(left ? `${left} bot-task(s) left: starting the next one.` : "Queue empty: handing over to the job drafter.");
+}
+
+main()
+  .catch(error => {
+    globalThis.lastError = error.message;
+    console.error("bot-tasks failed:", error.message);
+    process.exitCode = 1;
+  })
+  .finally(() => {
+    // GitHub's free AI has a daily limit; once it says no, stop for the day.
+    if (process.exitCode && /429|rate|limit/i.test(String(globalThis.lastError || ""))) return;
+    handOver();
+  });
