@@ -72,8 +72,16 @@ async function lastActivity(id) {
     ...(news?.news || []).map(n => ({what: `news "${n.title}"`, at: Date.parse(`${n.published_at}Z`)})),
     ...(events || []).map(e => ({what: `convoy "${e.name}"`, at: Date.parse(`${e.start_at}Z`)})),
   ].filter(d => d.at && d.at <= now).sort((a, b) => b.at - a.at);
-  return dates[0] || null;
+  // Public job posts (8 Oct 2026): news posts that advertise a role, with the date each was posted.
+  const jobs = (news?.news || [])
+    .filter(n => JOB_POST.test(`${n.title} ${n.content_summary || ""}`))
+    .map(n => ({title: n.title, role: (`${n.title} ${n.content_summary || ""}`.match(JOB_ROLE) || ["role not named"])[0], at: Date.parse(`${n.published_at}Z`), url: `https://truckersmp.com/vtc/${id}/news/${n.id}`}))
+    .filter(j => j.at)
+    .sort((a, b) => b.at - a.at);
+  return dates[0] ? {...dates[0], jobs} : (jobs.length ? {jobs} : null);
 }
+const JOB_POST = /\b(hiring|recruit\w*|vacanc\w*|positions? (open|available)|applications? (are )?open|looking for|join (our|the) (staff|team)|wanted|needed)\b/i;
+const JOB_ROLE = /\b(drivers?|staff|moderators?|admins?|hr|human resources|recruit(ers|ment)|event (team|staff)|media( team)?|developers?|designers?|managers?|support|dispatch\w*|convoy (control|team))\b/i;
 
 const TRUCKY = "https://e.truckyapp.com/api/v1";
 const truckyHeaders = {"user-agent": "Mozilla/5.0 (rules-search; personal job search)", accept: "application/json"};
@@ -175,7 +183,9 @@ async function main() {
     out.push(`- Join Discord: https://discord.gg/${server.code} (${server.members} members, ${server.online} online, checked ${today})`);
     out.push(`- Website: ${vtc.website}`);
     out.push(`- Staff on the roster: ${staff} (${vtc.members_count} members in total)`);
-    out.push(`- Management last active: ${active ? `${active.what}, ${day(active.at)} (${ago(active.at)})` : "no news or convoys found"} ${fresh ? "✅" : "⚠️ older than 2 days"}`);
+    out.push(`- Management last active: ${active?.at ? `${active.what}, ${day(active.at)} (${ago(active.at)})` : "no news or convoys found"} ${fresh ? "✅" : "⚠️ older than 2 days"}`);
+    if (active?.jobs?.length) active.jobs.slice(0, 3).forEach(j => out.push(`- 📢 Job post: "${j.title}" (${j.role}), posted ${day(j.at)} (${ago(j.at)}) — ${j.url}`));
+    else out.push(`- 📢 Job post: none public — ask in their Discord which roles are open`);
     out.push(`- Verification: ${server.clickToAgree ? "Discord's click-to-agree rules screen ✅" : "can't see from outside — leave if it asks for maths"}`);
     out.push(`- Check inside: voice channels? apply by ticket? will they give a written brief?`);
     out.push("");
