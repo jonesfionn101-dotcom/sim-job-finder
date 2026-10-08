@@ -20,6 +20,10 @@ const HUMAN_ONLY = [
   /(comments?|replies|descriptions?|pr text|chat) (must|should) be (written by a )?human/,
   /do not (paste|post) (ai|llm)[- ]generated (comments|replies|descriptions)/,
   /no (fully )?(ai|llm)[- ](generated|authored) (pull requests|prs|contributions)/,
+  // A signed legal agreement (CLA) needs him personally, and it promises the work is his own (8 Oct 2026).
+  /contributor license agreement/,
+  /sign (our|the) (individual |corporate )?cla\b/,
+  /\b(requires? (a )?cla|cla (is )?required)\b/,
 ];
 
 /** Quote of the rule that needs a person in the loop, or null. */
