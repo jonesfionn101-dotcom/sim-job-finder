@@ -30,7 +30,9 @@ const groupFor = text => (GROUP_OF.find(([, re]) => re.test(text)) || ["🎮 UK 
 // STRICT MODE (8 Oct 2026): a server is only listed when its own description
 // says it has an open job of a kind he wants. These searches look for exactly
 // those descriptions, per group.
-const JOB_WORDS = ["staff applications open", "looking for staff", "hiring staff", "looking for moderators", "bot developer", "looking for developers"];
+const JOB_WORDS = ["staff applications open", "looking for staff", "hiring staff", "looking for moderators", "bot developer", "looking for developers",
+  // Application-reviewing jobs (added 8 Oct 2026): recruitment / HR teams.
+  "recruitment team", "hr team", "application reviewers"];
 const TOPIC_OF = {
   "🚜 Farming": ["fs22", "farming simulator"],
   "🚚 Trucking & transport": ["ets2", "truckersmp"],
@@ -41,7 +43,7 @@ for (const [group, topics] of Object.entries(TOPIC_OF)) {
   for (const topic of topics) for (const words of JOB_WORDS) QUERIES[group].push(`${topic} ${words}`);
 }
 // The kinds of job he wants (all server-side, no gameplay needed).
-const WANTED_ROLE = /\b(staff|moderators?|mods|admins?|support|helpers?|hr|human resources|developers?|devs?|bot|web(site)?|designers?|media|events?|community managers?|managers?|team)\b/i;
+const WANTED_ROLE = /\b(staff|moderators?|mods|admins?|support|helpers?|hr|human resources|developers?|devs?|bot|web(site)?|designers?|media|events?|community managers?|managers?|team|recruit(ers?|ment)|application reviewers?|reviewers?)\b/i;
 // Communities already joined (private TRIED_VTCS secret): never listed.
 const TRIED = (process.env.TRIED_VTCS || "").split(/[\n,]/).map(n => n.trim().toLowerCase()).filter(Boolean);
 const SKIP = /web3|crypto|nft|blockchain|nsfw|18\+|adult|dating/i;
