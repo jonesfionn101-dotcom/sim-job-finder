@@ -48,7 +48,7 @@ const WANTED_ROLE = /\b(staff|moderators?|mods|admins?|support|helpers?|hr|human
 const TRIED = (process.env.TRIED_VTCS || "").split(/[\n,]/).map(n => n.trim().toLowerCase()).filter(Boolean);
 const SKIP = /web3|crypto|nft|blockchain|nsfw|18\+|adult|dating/i;
 const LOCAL = /\b(uk|u\.k\.|united kingdom|british|britain|england|scotland|wales|ireland|irish|northern ireland|gmt|bst)\b/i;
-const HIRING = /\b(staff applications?|staff apps|apply for staff|we('re| are) (hiring|recruiting)|hiring|recruiting (staff|mods?|moderators)|looking for (staff|mods?|moderators|helpers|developers?|admins?|bot (devs?|developers?)|web ?(designers?|developers?))|bot developers? (wanted|needed)|discord (managers?|admins?) (wanted|needed)|join (our|the) (staff|team)|applications? (are )?open)\b/i;
+const HIRING = /\b(staff applications?|staff apps|apply for staff|we('re| are) (hiring|recruiting)|hiring|recruiting (staff|mods?|moderators|helpers|developers?)|looking for (staff|mods?|moderators|helpers|developers?|admins?|support( staff)?|hr( staff)?|media( team)?|event (staff|team)|recruiters?|application reviewers?|bot (devs?|developers?)|web ?(designers?|developers?))|bot developers? (wanted|needed)|(discord )?(managers?|admins?|moderators|mods|helpers) (wanted|needed)|join (our|the) (staff|team)|(staff|mod|moderator|support|hr|media|event|recruitment|helper) (team )?applications? (are )?open|applications? (are )?open)\b/i;
 const MIN_MEMBERS = 100;
 const SHORTLIST = 20;
 const PER_GROUP = 5;
@@ -80,6 +80,16 @@ async function listings(query) {
   return servers;
 }
 
+/**
+ * The open-job evidence in a server description, or null. A job counts only
+ * when the description both advertises hiring AND names a role he wants.
+ * Every role has tests in tests/roles.test.mjs.
+ */
+export function openJob(description) {
+  const hiring = description.match(HIRING);
+  return hiring && WANTED_ROLE.test(description) ? hiring[0] : null;
+}
+
 async function main() {
   const seen = new Map();
   let failed = 0;
@@ -101,7 +111,7 @@ async function main() {
   const scored = [...seen.values()]
     .filter(s => s.members >= MIN_MEMBERS && GAMING.test(`${s.name} ${s.description}`) && !SKIP.test(`${s.name} ${s.description}`))
     // Strict: the description itself must advertise an open job he wants.
-    .filter(s => HIRING.test(s.description) && WANTED_ROLE.test(s.description))
+    .filter(s => openJob(s.description))
     .filter(s => !TRIED.some(name => s.name.toLowerCase().includes(name)))
     .map(s => {
       const text = `${s.name} ${s.description}`;
@@ -140,7 +150,8 @@ async function main() {
   }
 }
 
-main().catch(error => {
+// Only search when run directly (the tests import openJob without searching).
+if (import.meta.url === `file://${process.argv[1]}` || process.argv[1]?.endsWith("community-search.mjs")) main().catch(error => {
   console.error("community-search failed:", error.message);
   process.exit(1);
 });

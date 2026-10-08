@@ -88,6 +88,8 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: 22
+      - name: Role tests (the search must spot each kind of job)
+        run: node --test tests/roles.test.mjs
       - id: comm
         name: Search farming, sim and UK/Irish gaming communities
         timeout-minutes: 10
