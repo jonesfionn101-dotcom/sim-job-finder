@@ -27,10 +27,27 @@ const GROUP_OF = [
   ["🏎️ Other sims", /\b(sim(ulator|ulation|s)?|racing|iracing|assetto|flight|msfs|police|construction)\b/i],
 ];
 const groupFor = text => (GROUP_OF.find(([, re]) => re.test(text)) || ["🎮 UK & Irish gaming"])[0];
+// STRICT MODE (8 Oct 2026): a server is only listed when its own description
+// says it has an open job of a kind he wants. These searches look for exactly
+// those descriptions, per group.
+const JOB_WORDS = ["staff applications open", "looking for staff", "hiring staff", "looking for moderators", "bot developer", "looking for developers"];
+const TOPIC_OF = {
+  "🚜 Farming": ["fs22", "farming simulator"],
+  "🚚 Trucking & transport": ["ets2", "truckersmp"],
+  "🏎️ Other sims": ["sim racing", "simulator"],
+  "🎮 UK & Irish gaming": ["uk", "ireland"],
+};
+for (const [group, topics] of Object.entries(TOPIC_OF)) {
+  for (const topic of topics) for (const words of JOB_WORDS) QUERIES[group].push(`${topic} ${words}`);
+}
+// The kinds of job he wants (all server-side, no gameplay needed).
+const WANTED_ROLE = /\b(staff|moderators?|mods|admins?|support|helpers?|hr|human resources|developers?|devs?|bot|web(site)?|designers?|media|events?|community managers?|managers?|team)\b/i;
+// Communities already joined (private TRIED_VTCS secret): never listed.
+const TRIED = (process.env.TRIED_VTCS || "").split(/[\n,]/).map(n => n.trim().toLowerCase()).filter(Boolean);
 const SKIP = /web3|crypto|nft|blockchain|nsfw|18\+|adult|dating/i;
 const LOCAL = /\b(uk|u\.k\.|united kingdom|british|britain|england|scotland|wales|ireland|irish|northern ireland|gmt|bst)\b/i;
 const HIRING = /\b(staff applications?|staff apps|apply for staff|we('re| are) (hiring|recruiting)|hiring|recruiting (staff|mods?|moderators)|looking for (staff|mods?|moderators|helpers|developers?|admins?|bot (devs?|developers?)|web ?(designers?|developers?))|bot developers? (wanted|needed)|discord (managers?|admins?) (wanted|needed)|join (our|the) (staff|team)|applications? (are )?open)\b/i;
-const MIN_MEMBERS = 300;
+const MIN_MEMBERS = 100;
 const SHORTLIST = 20;
 const PER_GROUP = 5;
 
@@ -81,6 +98,9 @@ async function main() {
 
   const scored = [...seen.values()]
     .filter(s => s.members >= MIN_MEMBERS && GAMING.test(`${s.name} ${s.description}`) && !SKIP.test(`${s.name} ${s.description}`))
+    // Strict: the description itself must advertise an open job he wants.
+    .filter(s => HIRING.test(s.description) && WANTED_ROLE.test(s.description))
+    .filter(s => !TRIED.some(name => s.name.toLowerCase().includes(name)))
     .map(s => {
       const text = `${s.name} ${s.description}`;
       const local = (text.match(LOCAL) || [])[0];
@@ -92,18 +112,18 @@ async function main() {
   const today = new Date().toISOString().slice(0, 10);
   const hiringCount = scored.filter(s => s.hiring).length;
   const out = [
-    `Community search ${today}. ${scored.length} communities with ${MIN_MEMBERS}+ members; ${hiringCount} mention staff or hiring in their description.`,
+    `Strict community job search ${today}. Only servers whose own description advertises an open job are listed: ${scored.length} found.`,
     "",
   ];
   for (const group of Object.keys(QUERIES)) {
     const inGroup = scored.filter(s => s.group === group).slice(0, PER_GROUP);
     out.push(`## ${group}`, "");
-    if (!inGroup.length) out.push("Nothing found in this group today.", "");
+    if (!inGroup.length) out.push("No open jobs found in this group today.", "");
     inGroup.forEach((s, i) => {
       out.push(`### ${i + 1}. ${s.name}`);
       out.push(`- Open: ${s.url} (${s.members.toLocaleString("en-GB")} members, listing read ${today})`);
       out.push(`- ${s.description.replace(/\s+/g, " ").slice(0, 200) || "(no description)"}`);
-      out.push(`- ${s.hiring ? `🟢 Description says "${s.hiring}"` : "No staff call in the description — check #announcements inside"}`);
+      out.push(`- 🟢 Open job: their description says "${s.hiring}" (read ${today}; Discord doesn't show when it was written)`);
       out.push(`- ${s.local ? `Looks UK/Irish ("${s.local}")` : "Country not stated"} · found by: ${s.queries.slice(0, 3).join(", ")}`);
       out.push(`- Check inside: voice channels, ticket applications, age rule, button-only verification${group === "🚜 Farming" ? ", and ask if they need anything built (bot, website, Discord setup) — no gameplay needed" : ""}`);
       out.push("");

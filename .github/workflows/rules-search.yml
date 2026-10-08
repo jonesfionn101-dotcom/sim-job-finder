@@ -91,6 +91,8 @@ jobs:
       - id: comm
         name: Search farming, sim and UK/Irish gaming communities
         timeout-minutes: 10
+        env:
+          TRIED_VTCS: ${{ secrets.TRIED_VTCS }}
         run: node community-search.mjs
       - name: Post the communities as an issue
         env:
