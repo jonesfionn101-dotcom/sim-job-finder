@@ -82,7 +82,7 @@ jobs:
     needs: clock
     if: needs.clock.outputs.go == 'yes'
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -92,7 +92,7 @@ jobs:
         run: node --test tests/roles.test.mjs
       - id: comm
         name: Search farming, sim and UK/Irish gaming communities
-        timeout-minutes: 12
+        timeout-minutes: 35
         env:
           TRIED_VTCS: ${{ secrets.TRIED_VTCS }}
         # Keep widening (more topics, same strict rules) until something is found.
