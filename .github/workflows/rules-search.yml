@@ -92,10 +92,19 @@ jobs:
         run: node --test tests/roles.test.mjs
       - id: comm
         name: Search farming, sim and UK/Irish gaming communities
-        timeout-minutes: 10
+        timeout-minutes: 12
         env:
           TRIED_VTCS: ${{ secrets.TRIED_VTCS }}
-        run: node community-search.mjs
+        # Keep widening (more topics, same strict rules) until something is found.
+        run: |
+          for widen in 0 1 2; do
+            GITHUB_OUTPUT=attempt.out WIDEN=$widen node community-search.mjs > /dev/null
+            count=$(grep -m1 '^count=' attempt.out | cut -d= -f2)
+            echo "widen level $widen found $count"
+            [ "${count:-0}" -gt 0 ] && break
+            [ $widen -lt 2 ] && rm attempt.out
+          done
+          cat attempt.out >> "$GITHUB_OUTPUT"
       - name: Post the communities as an issue
         env:
           GH_TOKEN: ${{ github.token }}

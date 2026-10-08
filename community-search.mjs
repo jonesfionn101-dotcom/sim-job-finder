@@ -39,6 +39,17 @@ const TOPIC_OF = {
   "🏎️ Other sims": ["sim racing", "simulator"],
   "🎮 UK & Irish gaming": ["uk", "ireland"],
 };
+// "Don't stop until it finds something" (8 Oct 2026): when a run finds no open
+// job, the workflow re-runs with WIDEN=1, then WIDEN=2, which search more
+// topics. The rules for what counts as an open job never get looser.
+const WIDEN = Number(process.env.WIDEN || 0);
+const MORE_TOPICS = [
+  {"🚜 Farming": ["fs25", "farm sim"], "🚚 Trucking & transport": ["ats", "vtc", "bus simulator"], "🏎️ Other sims": ["assetto corsa", "flight sim"], "🎮 UK & Irish gaming": ["fivem uk", "minecraft uk"]},
+  {"🚜 Farming": ["farming community", "agriculture"], "🚚 Trucking & transport": ["trucking", "convoy", "train sim"], "🏎️ Other sims": ["police roleplay", "racing league"], "🎮 UK & Irish gaming": ["gta rp", "roblox uk", "gaming community", "esports"]},
+];
+for (const extra of MORE_TOPICS.slice(0, WIDEN)) {
+  for (const [group, topics] of Object.entries(extra)) TOPIC_OF[group].push(...topics);
+}
 for (const [group, topics] of Object.entries(TOPIC_OF)) {
   for (const topic of topics) for (const words of JOB_WORDS) QUERIES[group].push(`${topic} ${words}`);
 }

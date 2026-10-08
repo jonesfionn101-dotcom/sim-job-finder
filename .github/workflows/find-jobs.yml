@@ -31,7 +31,16 @@ jobs:
         name: Search GitHub for matching jobs
         env:
           GITHUB_TOKEN: ${{ secrets.FINDER_TOKEN || github.token }}
-        run: node finder.mjs
+        # Keep widening (older issues, same rules) until something is found.
+        run: |
+          for days in 7 14 30; do
+            GITHUB_OUTPUT=attempt.out FINDER_DAYS=$days node finder.mjs > /dev/null
+            count=$(grep -m1 '^count=' attempt.out | cut -d= -f2)
+            echo "last $days days: found $count"
+            [ "${count:-0}" -gt 0 ] && break
+            [ $days -lt 30 ] && rm attempt.out
+          done
+          cat attempt.out >> "$GITHUB_OUTPUT"
 
       - name: Post the shortlist as an issue
         env:
