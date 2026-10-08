@@ -14,7 +14,7 @@ import fs from "node:fs";
 
 const REPO = process.env.GITHUB_REPOSITORY;
 const TOKEN = process.env.GH_TOKEN;
-const MODEL = process.env.AUTOFIX_MODEL || "openai/gpt-4.1";
+
 const MAX_FILE_CHARS = 20000;
 
 const sh = (cmd, opts = {}) => execSync(cmd, {stdio: "pipe", encoding: "utf8", maxBuffer: 64 * 1024 * 1024, ...opts});
@@ -23,16 +23,28 @@ const trySh = (cmd, opts = {}) => {
 };
 const tail = (text, n = 40) => text.split("\n").slice(-n).join("\n");
 
+// Free AI with no key: Pollinations (anonymous tier). GitHub Models, the
+// original choice, was retired on 30 July 2026. Override with AI_URL/AI_MODEL.
+const AI_URL = process.env.AI_URL || "https://text.pollinations.ai/openai";
+const AI_MODEL = process.env.AI_MODEL || "openai";
+
 async function ask(messages) {
-  const response = await fetch("https://models.github.ai/inference/chat/completions", {
-    method: "POST",
-    signal: AbortSignal.timeout(180000),
-    headers: {authorization: `Bearer ${TOKEN}`, "content-type": "application/json"},
-    body: JSON.stringify({model: MODEL, messages, temperature: 0.2}),
-  }).catch(error => ({ok: false, statusText: error.message}));
-  if (!response.ok) throw new Error(`GitHub Models: ${response.status || ""} ${response.statusText}`);
-  const data = await response.json();
-  return data.choices?.[0]?.message?.content || "";
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    const response = await fetch(AI_URL, {
+      method: "POST",
+      signal: AbortSignal.timeout(300000),
+      headers: {"content-type": "application/json"},
+      body: JSON.stringify({model: AI_MODEL, messages}),
+    }).catch(error => ({ok: false, status: 0, statusText: error.message}));
+    if (response.ok) {
+      const text = await response.text();
+      try { return JSON.parse(text).choices?.[0]?.message?.content || ""; }
+      catch { throw new Error(`AI reply was not JSON: ${text.slice(0, 80)}`); }
+    }
+    // Anonymous tier is rate limited: wait and try again a few times.
+    if (attempt < 3) await new Promise(r => setTimeout(r, 30000 * attempt));
+    else throw new Error(`AI service: ${response.status} ${response.statusText}`);
+  }
 }
 
 function extractDiff(text) {
@@ -52,6 +64,7 @@ async function main() {
     .filter(t => !t.labels.some(l => l.name === "bot-tried"));
   if (!tasks.length) { console.log("No bot-tasks waiting."); return; }
   const issue = tasks.sort((a, b) => a.number - b.number)[0];
+  globalThis.currentIssue = issue;
   console.log(`Working on bot-task #${issue.number}: ${issue.title}`);
 
   const files = [...new Set((issue.body.match(/^Files?: (.+)$/m)?.[1] || "").split(/[,\s]+/).filter(f => f && fs.existsSync(f)))];
@@ -85,7 +98,7 @@ async function main() {
     sh(`git switch -c ${branch}`);
     sh(`git -c user.name="sim-job-finder bot" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" commit -am ${JSON.stringify(`Bot fix for #${issue.number}: ${issue.title}`)}`);
     sh(`git push origin ${branch}`);
-    fs.writeFileSync("task-note.md", `🤖 Suggested fix for #${issue.number}, made by GitHub's free AI (${MODEL}) on attempt ${attempt} of 3.\n\n**Not merged.** It must be checked before it goes live.\n\nChecks run: syntax check${testCommand ? ` and \`${testCommand}\`` : ""} — all passed.\n\nCloses #${issue.number}`);
+    fs.writeFileSync("task-note.md", `🤖 Suggested fix for #${issue.number}, made by a free AI (${AI_MODEL} via Pollinations) on attempt ${attempt} of 3.\n\n**Not merged.** It must be checked before it goes live.\n\nChecks run: syntax check${testCommand ? ` and \`${testCommand}\`` : ""} — all passed.\n\nCloses #${issue.number}`);
     sh(`gh pr create --repo ${REPO} --head ${branch} --title ${JSON.stringify(`🤖 Bot fix: ${issue.title}`)} --body-file task-note.md`);
     sh(`gh issue edit ${issue.number} --repo ${REPO} --add-label bot-tried`);
     console.log(`Opened a pull request for #${issue.number}`);
@@ -104,13 +117,10 @@ function handOver() {
 }
 
 main()
+  .then(() => handOver())
   .catch(error => {
-    globalThis.lastError = error.message;
     console.error("bot-tasks failed:", error.message);
     process.exitCode = 1;
-  })
-  .finally(() => {
-    // GitHub's free AI has a daily limit; once it says no, stop for the day.
-    if (process.exitCode && /429|rate|limit/i.test(String(globalThis.lastError || ""))) return;
-    handOver();
+    // Never retry the same task in a loop: mark it tried and stop the chain.
+    if (globalThis.currentIssue) trySh(`gh issue edit ${globalThis.currentIssue.number} --repo ${REPO} --add-label bot-tried`);
   });

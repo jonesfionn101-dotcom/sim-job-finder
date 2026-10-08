@@ -15,7 +15,7 @@ import {humanOnlyRule, untestableIssue, untestableProject} from "./auto-rules.mj
 
 const TOKEN = process.env.GH_TOKEN;
 const HOME = process.env.GITHUB_REPOSITORY;
-const MODEL = process.env.AUTOFIX_MODEL || "openai/gpt-4.1";
+
 const WORK = "work";
 const MAX_FILES = 6;
 const MAX_FILE_CHARS = 12000;
@@ -58,16 +58,28 @@ async function candidates() {
   return links;
 }
 
+// Free AI with no key: Pollinations (anonymous tier). GitHub Models, the
+// original choice, was retired on 30 July 2026. Override with AI_URL/AI_MODEL.
+const AI_URL = process.env.AI_URL || "https://text.pollinations.ai/openai";
+const AI_MODEL = process.env.AI_MODEL || "openai";
+
 async function ask(messages) {
-  const response = await fetch("https://models.github.ai/inference/chat/completions", {
-    method: "POST",
-    signal: AbortSignal.timeout(180000),
-    headers: {authorization: `Bearer ${TOKEN}`, "content-type": "application/json"},
-    body: JSON.stringify({model: MODEL, messages, temperature: 0.2}),
-  }).catch(error => ({ok: false, statusText: error.message}));
-  if (!response.ok) throw new Error(`GitHub Models: ${response.status || ""} ${response.statusText}`);
-  const data = await response.json();
-  return data.choices?.[0]?.message?.content || "";
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    const response = await fetch(AI_URL, {
+      method: "POST",
+      signal: AbortSignal.timeout(300000),
+      headers: {"content-type": "application/json"},
+      body: JSON.stringify({model: AI_MODEL, messages}),
+    }).catch(error => ({ok: false, status: 0, statusText: error.message}));
+    if (response.ok) {
+      const text = await response.text();
+      try { return JSON.parse(text).choices?.[0]?.message?.content || ""; }
+      catch { throw new Error(`AI reply was not JSON: ${text.slice(0, 80)}`); }
+    }
+    // Anonymous tier is rate limited: wait and try again a few times.
+    if (attempt < 3) await new Promise(r => setTimeout(r, 30000 * attempt));
+    else throw new Error(`AI service: ${response.status} ${response.statusText}`);
+  }
 }
 
 /** Files most likely to need the change: ones whose text matches words from the issue. */
@@ -160,7 +172,7 @@ async function main() {
     const body = [
       `**Draft fix for https://github.com/${job.repo}/issues/${job.number}** — "${result.issue.title}"`,
       "",
-      "⚠️ Made by GitHub's free AI (" + MODEL + "). **Not sent.** Claude must check it before any pull request.",
+      "⚠️ Made by a free AI (" + AI_MODEL + " via Pollinations). **Not sent.** Claude must check it before any pull request.",
       "",
       `- Files looked at: ${result.files.join(", ")}`,
       `- Tests: \`${result.testCommand}\` passed before and after the change (attempt ${result.attempt} of 3)`,
