@@ -81,7 +81,7 @@ jobs:
 
   communities:
     needs: clock
-    if: needs.clock.outputs.go == 'yes'
+    if: needs.clock.outputs.go == 'yes' && vars.COMMUNITY_SEARCH != 'off'
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:

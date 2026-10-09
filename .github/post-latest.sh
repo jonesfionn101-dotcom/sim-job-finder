@@ -10,3 +10,7 @@ if [ -n "$issue" ]; then
 else
   gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" --body-file "$body"
 fi
+# Keep every result, not just the newest: each run is also saved as a comment.
+# archive.yml moves these comments into findings-archive.md three times a day.
+issue=${issue:-$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "\"📋 $name:\" in:title" --json number -q '.[0].number')}
+gh issue comment "$issue" --repo "$GITHUB_REPOSITORY" --body-file "$body" >/dev/null

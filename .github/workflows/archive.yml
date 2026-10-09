@@ -1,0 +1,32 @@
+name: Clear-out (save everything first)
+
+# Midnight, 9 AM and midday, Dublin time. GitHub runs on UTC, so both the
+# summer (IST) and winter (GMT) hours are listed and the step checks which
+# one is right today.
+on:
+  schedule:
+    - cron: "0 23,0,8,9,11,12 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  archive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - name: Save every result, then clear
+        env:
+          GH_TOKEN: ${{ github.token }}
+          MANUAL: ${{ github.event_name == 'workflow_dispatch' }}
+        run: |
+          hour=$(TZ=Europe/Dublin date +%H)
+          if [ "$MANUAL" != "true" ] && [[ ! " 00 09 12 " =~ " $hour " ]]; then echo "Not a clear-out hour in Dublin ($hour)."; exit 0; fi
+          bash .github/archive.sh
