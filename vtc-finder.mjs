@@ -103,7 +103,7 @@ function reject(vtc) {
   if (vtc.members_count < MIN_MEMBERS) return `only ${vtc.members_count} members`;
   if (!vtc.verified && vtc.members_count < WELL_KNOWN_MEMBERS) return "not well-known (unverified, under " + WELL_KNOWN_MEMBERS + " members)";
   // Rules 2, 7 and 14 (checked 9 Oct 2026): UK-based, has a website, has a Discord.
-  if (!UK.test(`${vtc.name} ${vtc.slogan || ""} ${vtc.information || ""}`) && !/\.uk(\/|$)/i.test(vtc.website || "")) return "not UK-based";
+  if (!process.env.WORLDWIDE && !UK.test(`${vtc.name} ${vtc.slogan || ""} ${vtc.information || ""}`) && !/\.uk(\/|$)/i.test(vtc.website || "")) return "not UK-based";
   if (!vtc.website) return "no website";
   if (!vtc.socials?.discord) return "no Discord";
   return null;

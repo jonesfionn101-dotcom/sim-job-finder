@@ -186,7 +186,7 @@ async function main() {
 
   const scored = [...seen.values()]
     // English-speaking UK/Irish servers only (9 Oct 2026).
-    .filter(s => LOCAL.test(`${s.name} ${s.description}`) && english(s.description))
+    .filter(s => (process.env.WORLDWIDE || LOCAL.test(`${s.name} ${s.description}`)) && english(s.description)) // WORLDWIDE=1: test run without the UK rule
     .filter(s => s.members >= MIN_MEMBERS && GAMING.test(`${s.name} ${s.description}`) && !SKIP.test(`${s.name} ${s.description}`))
     // Strict: the description itself must advertise an open job he wants.
     .filter(s => openJob(s.description))
