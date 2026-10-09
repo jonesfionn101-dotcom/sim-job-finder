@@ -153,7 +153,11 @@ async function main() {
     const lastEvent = why ? null : await recentEvent(id);
     if (why) dropped.push(`${vtc.name}: ${why}`);
     else if (!lastEvent) dropped.push(`${vtc.name}: no convoy or event within ${ACTIVE_DAYS} days`);
-    else kept.push({...vtc, lastEvent, jobs: await outsiderJobPosts(id)});
+    else {
+      const internal = [];
+      kept.push({...vtc, lastEvent, jobs: await outsiderJobPosts(id, undefined, internal)});
+      internal.forEach(post => dropped.push(`${vtc.name}: internal-only role "${post.title}" (${post.url})`));
+    }
     await sleep(250);
   }
 

@@ -28,7 +28,7 @@ async function api(path) {
 }
 
 /** [{title, role, at, url, outsiders}] newest first; outsiders = the post says outsiders may apply. */
-export async function outsiderJobPosts(vtcId, news) {
+export async function outsiderJobPosts(vtcId, news, internalOut = []) {
   news ??= (await api(`${vtcId}/news`))?.news || [];
   const now = Date.now();
   const posts = [];
@@ -38,7 +38,9 @@ export async function outsiderJobPosts(vtcId, news) {
     if (!at || now - at > POST_DAYS * 86400000 || !JOB_POST.test(headline)) continue;
     const full = `${item.title} ${(await api(`${vtcId}/news/${item.id}`))?.content || item.content_summary || ""}`;
     const role = full.match(STAFF_ROLE);
-    if (!role || INTERNAL.test(full)) continue;
+    if (!role) continue;
+    // Internal-only roles go on the NO list instead of vanishing.
+    if (INTERNAL.test(full)) { internalOut.push({title: item.title, role: role[0], at, url: `https://truckersmp.com/vtc/${vtcId}/news/${item.id}`}); continue; }
     posts.push({title: item.title, role: role[0], at, url: `https://truckersmp.com/vtc/${vtcId}/news/${item.id}`, outsiders: EXTERNAL.test(full)});
   }
   return posts.sort((a, b) => b.at - a.at);
