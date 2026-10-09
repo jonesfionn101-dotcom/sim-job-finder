@@ -73,3 +73,33 @@ for (const file of fs.readdirSync(YES).filter(f => fs.existsSync(path.join(NO, f
   console.log(`  in both folders, kept in No: ${file}`);
 }
 console.log(`Final check: ${fs.readdirSync(YES).length} in Yes, ${fs.readdirSync(NO).length} in No, none in both.`);
+
+// One file for Claude (9 Oct 2026): what every bot did, in one place, so the
+// session-start update only needs to read this. Lives in "Job Results\AI only".
+const AI = path.join(ROOT, "AI only");
+fs.mkdirSync(AI, {recursive: true});
+const runs = JSON.parse(execSync(`gh run list --repo ${REPO} --limit 60 --json workflowName,status,conclusion,createdAt`, {encoding: "utf8"}));
+const latest = new Map();
+for (const run of runs) if (!latest.has(run.workflowName)) latest.set(run.workflowName, run);
+const failedToday = runs.filter(r => r.conclusion === "failure" && r.createdAt.slice(0, 10) === new Date().toISOString().slice(0, 10));
+const stuck = JSON.parse(execSync(`gh issue list --repo ${REPO} --state open --json number,title,updatedAt --limit 50`, {encoding: "utf8"}))
+  .filter(i => i.title.startsWith("🆘"));
+fs.writeFileSync(path.join(AI, "bot-summary.md"), [
+  `# Bot summary for Claude (updated ${new Date().toISOString().slice(0, 16).replace("T", " ")} UTC)`,
+  "",
+  "## Every bot's latest run",
+  ...[...latest.values()].map(r => `- ${r.workflowName}: ${r.conclusion || r.status} at ${r.createdAt.slice(0, 16).replace("T", " ")}`),
+  `- Failed runs today: ${failedToday.length}${failedToday.length ? ` (${[...new Set(failedToday.map(r => r.workflowName))].join(", ")})` : ""}`,
+  "",
+  "## Lists",
+  ...issues.map(i => `- ${i.title.replace(/^📋\s*/, "")}`),
+  "",
+  "## Stuck (needs Claude's research)",
+  ...(stuck.length ? stuck.map(i => `- #${i.number} ${i.title} (last update ${i.updatedAt.slice(0, 16).replace("T", " ")})`) : ["- nothing stuck"]),
+  "",
+  "## Folders",
+  `- Yes: ${fs.readdirSync(YES).join(", ") || "empty"}`,
+  `- No: ${fs.readdirSync(NO).length} entries`,
+  "",
+].join("\n"));
+console.log(`Summary for Claude written to ${path.join(AI, "bot-summary.md")}`);
