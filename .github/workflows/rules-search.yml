@@ -147,7 +147,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: node stuck-help.mjs "Community search"
 
-  # Runs all the time: as soon as one search finishes, start the next.
+  # Runs all the time: as soon as one search finishes, use the break to feed in
+  # NEW leads (lead-feeder.mjs), then start the next search with them.
   # (The 15-minute schedule above is a backup in case this chain ever stops.)
   again:
     needs: [uk-communities, app-projects, communities-post]
@@ -155,9 +156,19 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       actions: write
+      contents: write
     steps:
-      - env:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - name: Break time - feed in new leads
+        timeout-minutes: 10
+        continue-on-error: true
+        env:
           GH_TOKEN: ${{ github.token }}
-        run: |
-          sleep 120
-          gh workflow run rules-search.yml --repo "$GITHUB_REPOSITORY"
+        run: node lead-feeder.mjs
+      - name: Start the next search
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run rules-search.yml --repo "$GITHUB_REPOSITORY"
