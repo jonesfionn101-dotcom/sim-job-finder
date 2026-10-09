@@ -66,17 +66,32 @@ const HIRING = /\b(staff applications?|staff apps|apply for staff|we('re| are) (
 // Ticket route (9 Oct 2026): servers where you open a ticket to apply or to be given a job.
 const TICKET_JOB = /\b(open (a|an) (ticket|application) to (apply|join|get (a )?(job|role|task))|apply (via|through|by|in) (a )?tickets?|tickets? (to|for) (apply|applications?|staff|jobs?|roles?))\b/i;
 const MIN_MEMBERS = 100;
-const PARALLEL = 4;
+const PARALLEL = 2;
+const SHARD = Number(process.env.SHARD || 0);
+const SHARDS = Number(process.env.SHARDS || 1);
+/** Description is written in English (most of its words are everyday English ones). */
+export function english(text) {
+  const words = text.toLowerCase().match(/\p{L}+/gu) || [];
+  const common = words.filter(w => ENGLISH_WORDS.has(w)).length;
+  return words.length > 0 && common >= Math.min(3, words.length) * 0.6 && common / words.length >= 0.15;
+}
+const ENGLISH_WORDS = new Set("the and for our with you your to of is are a an we in on join community server friendly staff looking all be can this that it from by or as at come play games gaming new welcome".split(" "));
 const SHORTLIST = 20;
 const PER_GROUP = 5;
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 async function listings(query) {
-  const response = await fetch(`https://discord.com/servers?query=${encodeURIComponent(query)}`, {
-    signal: AbortSignal.timeout(20000),
-    headers: {"user-agent": "Mozilla/5.0", "accept-language": "en-GB"},
-  }).catch(() => null);
+  let response;
+  for (let attempt = 1; attempt <= 4; attempt++) {
+    response = await fetch(`https://discord.com/servers?query=${encodeURIComponent(query)}`, {
+      signal: AbortSignal.timeout(20000),
+      headers: {"user-agent": "Mozilla/5.0", "accept-language": "en-GB"},
+    }).catch(() => null);
+    // Too many requests: back off as Discord asks, then try again.
+    if (response?.status !== 429) break;
+    await sleep(Math.max(Number(response.headers.get("retry-after")) || 0, 15 * attempt) * 1000);
+  }
   if (!response?.ok) return [];
   const html = await response.text();
   const servers = [];
@@ -112,7 +127,10 @@ async function main() {
   let failed = 0;
   const queryCount = Object.values(QUERIES).flat().length;
   // Several searches at once (9 Oct 2026), each worker still pausing between its own requests.
-  const jobs = Object.entries(QUERIES).flatMap(([group, queries]) => queries.map(query => ({group, query})));
+  // Several computers at once: SHARD i of SHARDS takes every SHARDS-th search.
+  const jobs = Object.entries(QUERIES).flatMap(([group, queries]) => queries.map(query => ({group, query})))
+    .filter((_, i) => i % SHARDS === SHARD);
+  if (process.env.MERGE) jobs.length = 0;
   const worker = async () => {
     for (let job = jobs.shift(); job; job = jobs.shift()) {
       const found = await listings(job.query);
@@ -126,7 +144,14 @@ async function main() {
     }
   };
   await Promise.all(Array.from({length: PARALLEL}, worker));
-  for (const code of SEEDS.invites) {
+  // Merge step: combine what every computer collected.
+  if (process.env.MERGE) for (const file of fs.readdirSync(process.env.MERGE, {recursive: true}).filter(f => String(f).endsWith(".json"))) {
+    for (const server of JSON.parse(fs.readFileSync(`${process.env.MERGE}/${file}`, "utf8"))) {
+      const known = seen.get(server.url);
+      seen.set(server.url, {...server, group: known?.group || server.group, queries: [...(known?.queries || []), ...server.queries]});
+    }
+  }
+  for (const code of SHARD === 0 && !process.env.MERGE ? SEEDS.invites : []) {
     const invite = await fetch(`https://discord.com/api/v10/invites/${code}?with_counts=true`, {signal: AbortSignal.timeout(20000), headers: {"user-agent": "curl/8.0"}})
       .then(r => r.ok ? r.json() : null).catch(() => null);
     if (!invite?.guild) continue;
@@ -136,7 +161,11 @@ async function main() {
   }
   console.error(`${seen.size} servers from ${queryCount} searches and ${SEEDS.invites.length} starter leads (${failed} searches returned nothing)`);
 
+  if (process.env.COLLECT_ONLY) { fs.writeFileSync(process.env.COLLECT_ONLY, JSON.stringify([...seen.values()])); return; }
+
   const scored = [...seen.values()]
+    // English-speaking UK/Irish servers only (9 Oct 2026).
+    .filter(s => LOCAL.test(`${s.name} ${s.description}`) && english(s.description))
     .filter(s => s.members >= MIN_MEMBERS && GAMING.test(`${s.name} ${s.description}`) && !SKIP.test(`${s.name} ${s.description}`))
     // Strict: the description itself must advertise an open job he wants.
     .filter(s => openJob(s.description))
