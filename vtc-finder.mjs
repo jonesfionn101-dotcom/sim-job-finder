@@ -42,7 +42,13 @@ async function text(url) {
 }
 
 async function json(url) {
-  const response = await fetch(url, {signal: AbortSignal.timeout(20000), headers: {accept: "application/json"}}).catch(() => null);
+  let response;
+  for (let attempt = 1; attempt <= 4; attempt++) {
+    response = await fetch(url, {signal: AbortSignal.timeout(20000), headers: {accept: "application/json"}}).catch(() => null);
+    // Rate limited: wait and retry, so no VTC is silently skipped.
+    if (response?.status !== 429) break;
+    await sleep(20000 * attempt);
+  }
   if (!response?.ok) return null;
   const body = await response.json();
   return body.error ? null : body.response;
@@ -88,12 +94,18 @@ async function recruitingIds() {
 const speaksEnglish = vtc =>
   (vtc.languages || [vtc.language]).some(l => (l || "").toLowerCase().includes("english"));
 
+const UK = /\b(uk|u\.k\.|united kingdom|british|britain|england|scotland|scottish|wales|welsh|ireland|irish|gmt|bst)\b/i;
+
 function reject(vtc) {
   if (vtc.recruitment !== "Open") return "recruitment closed again";
   if (!speaksEnglish(vtc)) return `${(vtc.languages || []).join("/") || "unknown"} only`;
   if (!vtc.games?.ets && !vtc.games?.ats) return "neither ETS2 nor ATS";
   if (vtc.members_count < MIN_MEMBERS) return `only ${vtc.members_count} members`;
   if (!vtc.verified && vtc.members_count < WELL_KNOWN_MEMBERS) return "not well-known (unverified, under " + WELL_KNOWN_MEMBERS + " members)";
+  // Rules 2, 7 and 14 (checked 9 Oct 2026): UK-based, has a website, has a Discord.
+  if (!UK.test(`${vtc.name} ${vtc.slogan || ""} ${vtc.information || ""}`) && !/\.uk(\/|$)/i.test(vtc.website || "")) return "not UK-based";
+  if (!vtc.website) return "no website";
+  if (!vtc.socials?.discord) return "no Discord";
   return null;
 }
 

@@ -16,7 +16,12 @@ export const INTERNAL = /\b(internal(ly)?|existing (staff|members|drivers)|curre
 export const EXTERNAL = /\b(external|anyone|everyone|non[- ]?members?|outside (applicants|people)|open to all|not essential|don'?t (need|have) to be (a )?(driver|member))\b/i;
 
 async function api(path) {
-  const response = await fetch(`${API}/${path}`, {signal: AbortSignal.timeout(20000), headers: {"user-agent": "curl/8.0", accept: "application/json"}}).catch(() => null);
+  let response;
+  for (let attempt = 1; attempt <= 4; attempt++) {
+    response = await fetch(`${API}/${path}`, {signal: AbortSignal.timeout(20000), headers: {"user-agent": "curl/8.0", accept: "application/json"}}).catch(() => null);
+    if (response?.status !== 429) break;
+    await new Promise(r => setTimeout(r, 20000 * attempt));
+  }
   if (!response?.ok) return null;
   const body = await response.json().catch(() => null);
   return body && !body.error ? body.response : null;
