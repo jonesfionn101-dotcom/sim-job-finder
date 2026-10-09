@@ -2,8 +2,8 @@ name: Rules job search
 
 on:
   schedule:
-    # Every hour, day and night (public repos get unlimited Actions minutes).
-    - cron: "0 * * * *"
+    # Every 15 minutes as a backup; the "again" job keeps it running nonstop.
+    - cron: "*/15 * * * *"
   workflow_dispatch:
 
 permissions:
@@ -146,3 +146,18 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: node stuck-help.mjs "Community search"
+
+  # Runs all the time: as soon as one search finishes, start the next.
+  # (The 15-minute schedule above is a backup in case this chain ever stops.)
+  again:
+    needs: [uk-communities, app-projects, communities-post]
+    if: always()
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          sleep 120
+          gh workflow run rules-search.yml --repo "$GITHUB_REPOSITORY"

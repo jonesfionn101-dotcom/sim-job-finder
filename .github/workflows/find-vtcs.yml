@@ -3,7 +3,7 @@ name: Find recruiting VTCs
 on:
   schedule:
     # Every 3 hours, day and night.
-    - cron: "7 */3 * * *"
+    - cron: "37 * * * *"
   workflow_dispatch:
 
 permissions:
