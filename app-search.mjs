@@ -99,6 +99,10 @@ async function main() {
       open = ((await gh(`repos/${name}/issues?state=open&since=${recent}&per_page=10`)) || [])
         .filter(i => !i.pull_request && !i.assignee && i.created_at >= recent);
     }
+    // Rule 11 (9 Oct 2026): old posts can't be trusted, so only issues opened in the last 180 days count.
+    const fresh = new Date(Date.now() - 180 * 86400000).toISOString();
+    if (open.length && !open.some(i => i.created_at >= fresh)) { dropped.push(`${name}: its open issues are all older than 180 days`); continue; }
+    open = open.filter(i => i.created_at >= fresh);
     if (!open.length) { dropped.push(`${name}: no open starter or help-wanted issues`); continue; }
 
     const pulls = (await gh(`repos/${name}/pulls?state=closed&sort=updated&direction=desc&per_page=30`)) || [];

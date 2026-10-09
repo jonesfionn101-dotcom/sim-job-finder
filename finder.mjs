@@ -435,6 +435,11 @@ async function main() {
       note(rules.untestable);
       continue;
     }
+    // A plan the maintainers must approve first means waiting on a person (9 Oct 2026).
+    if (rules.agreementFirst) {
+      note("maintainers must agree a plan before any code (needs a person in the loop)");
+      continue;
+    }
     const cantTest = untestableIssue(issue.title, issue.body);
     if (cantTest) {
       note(cantTest);
