@@ -75,11 +75,23 @@ async function lastActivity(id) {
   // Public job posts (8 Oct 2026): news posts that advertise a role, with the date each was posted.
   const jobs = (news?.news || [])
     .filter(n => JOB_POST.test(`${n.title} ${n.content_summary || ""}`))
-    .map(n => ({title: n.title, role: (`${n.title} ${n.content_summary || ""}`.match(JOB_ROLE) || ["role not named"])[0], at: Date.parse(`${n.published_at}Z`), url: `https://truckersmp.com/vtc/${id}/news/${n.id}`}))
-    .filter(j => j.at)
+    .map(n => ({title: n.title, role: (`${n.title} ${n.content_summary || ""}`.match(JOB_ROLE) || ["role not named"])[0], at: Date.parse(`${n.published_at}Z`), id: n.id, url: `https://truckersmp.com/vtc/${id}/news/${n.id}`}))
+    .filter(j => j.at && now - j.at <= JOB_POST_DAYS * 86400000)
     .sort((a, b) => b.at - a.at);
-  return dates[0] ? {...dates[0], jobs} : (jobs.length ? {jobs} : null);
+  // Outsiders only (9 Oct 2026): read each post in full and drop roles kept for their own staff or drivers.
+  for (const job of jobs) {
+    const post = await api(`${id}/news/${job.id}`);
+    const text = `${job.title} ${post?.content || ""}`;
+    job.internal = INTERNAL.test(text);
+    job.outsiders = !job.internal && EXTERNAL.test(text);
+  }
+  const open = jobs.filter(j => !j.internal);
+  return dates[0] ? {...dates[0], jobs: open} : (open.length ? {jobs: open} : null);
 }
+// Old posts go stale: a role advertised months ago may now be internal only.
+const JOB_POST_DAYS = 30;
+const INTERNAL = /\b(internal(ly)?|existing (staff|members|drivers)|current (staff|members|drivers)|(staff|drivers|members) only|only (open )?(to|for) (our )?(staff|drivers|members)|must (already )?be (a |an )?(driver|member|employee) (of|at|with))\b/i;
+const EXTERNAL = /\b(external|anyone|everyone|non[- ]?members?|outside (applicants|people)|open to all|not essential|don'?t (need|have) to be (a )?(driver|member))\b/i;
 const JOB_POST = /\b(hiring|recruit\w*|vacanc\w*|positions? (open|available)|applications? (are )?open|looking for|join (our|the) (staff|team)|wanted|needed)\b/i;
 const JOB_ROLE = /\b(drivers?|staff|moderators?|admins?|hr|human resources|recruit(ers|ment)|event (team|staff)|media( team)?|developers?|designers?|managers?|support|dispatch\w*|convoy (control|team))\b/i;
 
@@ -164,7 +176,7 @@ async function main() {
   let step = STEPS.at(-1);
   let kept = [];
   for (const s of STEPS) {
-    kept = candidates.filter(c => c.staff >= s);
+    kept = candidates.filter(c => c.staff >= s && c.active?.jobs?.length); // only VTCs with a recent role outsiders can apply for
     if (kept.length) { step = s; break; }
   }
   kept.sort((a, b) => (b.active?.at || 0) - (a.active?.at || 0) || b.staff - a.staff);
@@ -184,7 +196,7 @@ async function main() {
     out.push(`- Website: ${vtc.website}`);
     out.push(`- Staff on the roster: ${staff} (${vtc.members_count} members in total)`);
     out.push(`- Management last active: ${active?.at ? `${active.what}, ${day(active.at)} (${ago(active.at)})` : "no news or convoys found"} ${fresh ? "✅" : "⚠️ older than 2 days"}`);
-    if (active?.jobs?.length) active.jobs.slice(0, 3).forEach(j => out.push(`- 📢 Job post: "${j.title}" (${j.role}), posted ${day(j.at)} (${ago(j.at)}) — ${j.url}`));
+    if (active?.jobs?.length) active.jobs.slice(0, 3).forEach(j => out.push(`- 📢 Job post: "${j.title}" (${j.role}) ${j.outsiders ? "✅ says outsiders can apply" : "❓ doesn't say if outsiders can apply — ask first"}, posted ${day(j.at)} (${ago(j.at)}) — ${j.url}`));
     else out.push(`- 📢 Job post: none public — ask in their Discord which roles are open`);
     out.push(`- Verification: ${server.clickToAgree ? "Discord's click-to-agree rules screen ✅" : "can't see from outside — leave if it asks for maths"}`);
     out.push(`- Check inside: voice channels? apply by ticket? will they give a written brief?`);
