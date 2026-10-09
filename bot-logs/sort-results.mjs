@@ -20,7 +20,7 @@ const NO = path.join(ROOT, "No");
 // Plain filenames only: brackets, # and dashes like "—" made files impossible to move.
 const safe = text => text.replace(/[^A-Za-z0-9 &()._,'-]/g, " ").replace(/\s+/g, " ").trim().slice(0, 80).trim();
 const issues = JSON.parse(execSync(`gh issue list --repo ${REPO} --state open --json title,body --limit 50`, {encoding: "utf8"}))
-  .filter(issue => issue.title.startsWith("📋"));
+  .filter(issue => issue.title.startsWith("📋") && !issue.title.includes("Worldwide test")); // test results never go in Yes/No
 
 let yes = 0, no = 0;
 for (const {title, body} of issues) {
