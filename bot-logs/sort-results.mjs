@@ -41,3 +41,25 @@ for (const {title, body} of issues) {
   }
 }
 console.log(`Sorted ${yes} into Yes and ${no} into No (${ROOT})`);
+
+// Second check (9 Oct 2026): a separate pass re-reads every Yes file against the
+// rules, in case a search bot put something in the wrong folder. Anything that
+// fails moves to No with the reason. Entries from Claude's notes are left alone.
+const CHECKS = [
+  [/^VTC shortlist|^UK VTC search/, text => /📢 (Staff job|Job post): "/.test(text) && !/none public/.test(text), "no staff job open to outsiders"],
+  [/^Community search/, text => /🟢 Open job/.test(text), "no open job in the server's description"],
+  [/^Job shortlist|^App project search/, text => {
+    const dates = [...text.matchAll(/[Oo]pened (\d{4}-\d{2}-\d{2})/g)].map(m => Date.parse(m[1]));
+    return dates.some(d => Date.now() - d <= 180 * 86400000) && !/plan before any code|could not check/.test(text);
+  }, "old issue, plan-first rule, or outsider fixes not checked"],
+];
+let moved = 0;
+for (const file of fs.readdirSync(YES).filter(f => !f.startsWith("Notes - "))) {
+  const text = fs.readFileSync(path.join(YES, file), "utf8");
+  const check = CHECKS.find(([which]) => which.test(file));
+  if (!check || check[1](text)) continue;
+  fs.writeFileSync(path.join(NO, file), text.replace(/^# ✅/, "# ❌") + `\nWhy not (second check): ${check[2]}\n`);
+  fs.rmSync(path.join(YES, file));
+  moved++;
+}
+if (moved) console.log(`Second check moved ${moved} wrong Yes entries to No`);
