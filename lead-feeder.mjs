@@ -101,7 +101,7 @@ for (let attempt = 1; attempt <= 3; attempt++) {
     c.invites.push(...added.invites.filter(i => !c.invites.includes(i)));
     c.listPages = [...new Set([...(c.listPages || []), ...added.pages])];
     fs.writeFileSync("seeds.json", `${JSON.stringify(latest, null, 2)}\n`);
-    sh(`git add seeds.json && git commit -qm "Lead feeder: ${total} new leads (${added.queries.length} phrases, ${added.pages.length} list pages, ${added.invites.length} servers)" && git push -q origin HEAD:main`);
+    sh(`git add seeds.json && git commit -qm "Lead feeder${process.env.FEEDER_SOURCE ? ` (${process.env.FEEDER_SOURCE})` : ""}: ${total} new leads (${added.queries.length} phrases, ${added.pages.length} list pages, ${added.invites.length} servers)" && git push -q origin HEAD:main`);
     break;
   } catch (error) {
     console.error(`saving leads failed (try ${attempt} of 3): ${error.message.split("\n")[0]}`);
