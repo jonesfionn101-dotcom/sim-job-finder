@@ -66,7 +66,12 @@
       "join ticket team",
       "open ticket role",
       "staff vacancy eu",
-      "call for staff"
+      "call for staff",
+      "convoy control team",
+      "uk vtc staff",
+      "vtc hr team",
+      "uk sim community staff",
+      "event team applications"
     ],
     "invites": [
       "GPGxNVyRmM",
@@ -91,7 +96,14 @@
       "acQjaAEBb9",
       "EWnBXnjpHB",
       "vanillarealms",
-      "pp"
+      "pp",
+      "dH86XPDSd",
+      "xboxuk",
+      "ukplace",
+      "boosteduk",
+      "rtgame",
+      "yeCB7pmdEN",
+      "jpfEJ2ZhcD"
     ],
     "listPages": [
       "https://www.farmsimgame.com/Discords",
@@ -103,5 +115,6 @@
       "https://discodus.com/servers/tag/farming-simulator",
       "https://discodus.com/servers/tag/support-team"
     ]
-  }
+  },
+  "fromClaude": "9 Oct 2026: Claude's saved leads (Convoy Control server from Pete, Xbox UK, UK place, Boosted UK, RTGame, Global Trucking, Twisted Transport) handed to the search AI."
 }

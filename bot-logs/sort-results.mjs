@@ -105,3 +105,7 @@ fs.writeFileSync(path.join(AI, "bot-summary.md"), [
   "",
 ].join("\n"));
 console.log(`Summary for Claude written to ${path.join(AI, "bot-summary.md")}`);
+
+// The search log (search-log.md on GitHub, pulled to this PC) as a document in Job Results.
+const LOG = new URL("../search-log.md", import.meta.url);
+if (fs.existsSync(LOG)) fs.copyFileSync(LOG, path.join(ROOT, "Search log.md"));

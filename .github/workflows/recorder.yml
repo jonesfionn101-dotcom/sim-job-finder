@@ -5,11 +5,12 @@ name: Search recorder
 # its time limit, the recorder still runs and says so.
 on:
   workflow_run:
-    workflows: ["Rules job search", "Find open-source jobs", "Find recruiting VTCs", "Draft a fix", "Work on bot-tasks"]
+    workflows: ["Rules job search", "Find open-source jobs", "Find recruiting VTCs", "Draft a fix", "Work on bot-tasks", "Lead feeder (new information for the searches)", "Clear-out (save everything first)", "Worldwide test (rules check)"]
     types: [requested, completed]
 
 permissions:
   issues: write
+  contents: write
 
 jobs:
   record:
@@ -43,3 +44,39 @@ jobs:
             issue=$(gh issue create --repo "$GITHUB_REPOSITORY" --title "📼 Search recorder (live log of every search run)" --body "Every automatic search writes here when it starts and finishes." | grep -o '[0-9]*$')
           fi
           gh issue comment "$issue" --repo "$GITHUB_REPOSITORY" --body "$line"
+
+      # One running document of every search: when it ran and what it found.
+      - uses: actions/checkout@v5
+        if: github.event.action == 'completed'
+        with:
+          fetch-depth: 30
+      - name: Add a line to search-log.md
+        if: github.event.action == 'completed'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NAME: ${{ github.event.workflow_run.name }}
+          RESULT: ${{ github.event.workflow_run.conclusion }}
+          STARTED: ${{ github.event.workflow_run.run_started_at }}
+        run: |
+          started=$(TZ=Europe/Dublin date -d "$STARTED" '+%d %b %Y %H:%M')
+          finished=$(TZ=Europe/Dublin date '+%H:%M')
+          case "$NAME" in
+            "Rules job search") lists="Community search|UK VTC search|App project search" ;;
+            "Find open-source jobs") lists="Job shortlist" ;;
+            "Find recruiting VTCs") lists="VTC shortlist" ;;
+            *) lists="" ;;
+          esac
+          found=""
+          if [ -n "$lists" ]; then
+            found=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "📋 in:title" --json title -q '.[].title' | grep -E "📋 ($lists):" | sed 's/^📋 //' | paste -sd ';' -)
+          fi
+          [ "$NAME" = "Lead feeder (new information for the searches)" ] && found=$(git log -1 --format=%s --author=github-actions -- seeds.json)
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          for try in 1 2 3; do
+            git fetch -q origin main && git reset -q --hard origin/main
+            [ -f search-log.md ] || printf '# Search log\n\nEvery automatic search: when it ran (Irish time), how it ended, and what it found. Newest at the bottom.\n\n| Started | Finished | Search | Result | Found |\n|---|---|---|---|---|\n' > search-log.md
+            printf '| %s | %s | %s | %s | %s |\n' "$started" "$finished" "$NAME" "$RESULT" "${found:--}" >> search-log.md
+            git add search-log.md && git commit -qm "Search log: $NAME $RESULT" && git push -q origin HEAD:main && break
+            sleep $((try * 5))
+          done
