@@ -9,26 +9,17 @@ param([switch]$Test)
 $yes = "G:\AI_Projects\Job Results\Yes"
 $seenFile = "G:\AI_Projects\Job Results\AI only\yes-seen.json"
 
+# Uses popup.ps1 (our own pop-up with sound): Windows notifications don't show on this PC.
 function Show-Alert([string]$Title, [string]$Body) {
-    [void][Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime]
-    [void][Windows.Data.Xml.Dom.XmlDocument, Windows.Data.Xml.Dom, ContentType = WindowsRuntime]
-    $launch = [System.Security.SecurityElement]::Escape("file:///" + ($yes -replace '\\', '/'))
-    $xml = @"
-<toast launch="$launch" activationType="protocol" scenario="reminder">
-  <visual>
-    <binding template="ToastGeneric">
-      <text>$([System.Security.SecurityElement]::Escape($Title))</text>
-      <text>$([System.Security.SecurityElement]::Escape($Body))</text>
-    </binding>
-  </visual>
-  <actions><action content="Open Yes folder" activationType="protocol" arguments="$launch"/></actions>
-  <audio src="ms-winsoundevent:Notification.Reminder"/>
-</toast>
-"@
-    $doc = New-Object Windows.Data.Xml.Dom.XmlDocument
-    $doc.LoadXml($xml)
-    $appId = "{1AC14E77-02E7-4E5D-B744-2EB1AE5198B7}\WindowsPowerShell\v1.0\powershell.exe"
-    [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier($appId).Show((New-Object Windows.UI.Notifications.ToastNotification $doc))
+    Start-Process powershell -WindowStyle Hidden -ArgumentList @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', (Join-Path $PSScriptRoot 'popup.ps1'), '-Title', $Title, '-Body', $Body)
+}
+
+# The job's name plus its first link, read from the Yes file.
+function Get-JobSummary([string]$File) {
+    $text = Get-Content -LiteralPath (Join-Path $yes $File) -Raw
+    $name = ($text -split "`n")[0] -replace '^#\s*\S*\s*', ''
+    $link = [regex]::Match($text, 'https?://\S+').Value
+    if ($link) { "$name`n$link" } else { $name }
 }
 
 if ($Test) { Show-Alert "New job found!" "This is what an alert looks like when something lands in your Yes folder."; "test alert sent"; exit 0 }
@@ -38,7 +29,7 @@ if (Test-Path -LiteralPath $seenFile) { try { $seen = @(Get-Content -LiteralPath
 $now = @(Get-ChildItem -LiteralPath $yes -File -ErrorAction SilentlyContinue | Where-Object { -not $_.Name.StartsWith("Notes - ") } | ForEach-Object { $_.Name })
 $new = @($now | Where-Object { $seen -notcontains $_ })
 foreach ($name in $new) {
-    Show-Alert "New job found!" ($name -replace '\.md$', '')
+    Show-Alert "New job found!" (Get-JobSummary $name)
     Start-Sleep -Milliseconds 800
 }
 ConvertTo-Json @($now) | Set-Content -LiteralPath $seenFile -Encoding utf8
