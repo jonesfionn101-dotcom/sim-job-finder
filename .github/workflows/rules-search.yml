@@ -112,6 +112,9 @@ jobs:
 
   communities-post:
     needs: communities
+    permissions:
+      contents: write
+      issues: write
     if: always() && needs.communities.result != 'skipped'
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -138,3 +141,8 @@ jobs:
         run: |
           printf '%s\n' "$BODY" > comm-body.md
           bash .github/post-latest.sh "Community search" "$HIRING hiring" comm-body.md
+      - name: If nothing was found, get help (Claude next session, another AI right now)
+        if: steps.comm.outputs.count == '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node stuck-help.mjs "Community search"
