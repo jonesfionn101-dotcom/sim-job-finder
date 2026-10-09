@@ -50,6 +50,9 @@ const MORE_TOPICS = [
 for (const extra of MORE_TOPICS.slice(0, WIDEN)) {
   for (const [group, topics] of Object.entries(extra)) TOPIC_OF[group].push(...topics);
 }
+// Starter leads from Claude's own research (seeds.json): extra searches and specific servers.
+const SEEDS = JSON.parse(fs.readFileSync(new URL("./seeds.json", import.meta.url), "utf8")).community;
+QUERIES["🎮 UK & Irish gaming"].push(...SEEDS.queries);
 for (const [group, topics] of Object.entries(TOPIC_OF)) {
   for (const topic of topics) for (const words of JOB_WORDS) QUERIES[group].push(`${topic} ${words}`);
 }
@@ -119,7 +122,15 @@ async function main() {
       await sleep(1500);
     }
   }
-  console.error(`${seen.size} servers from ${queryCount} searches (${failed} searches returned nothing)`);
+  for (const code of SEEDS.invites) {
+    const invite = await fetch(`https://discord.com/api/v10/invites/${code}?with_counts=true`, {signal: AbortSignal.timeout(20000), headers: {"user-agent": "curl/8.0"}})
+      .then(r => r.ok ? r.json() : null).catch(() => null);
+    if (!invite?.guild) continue;
+    const url = `https://discord.gg/${code}`;
+    if (!seen.has(url)) seen.set(url, {name: invite.guild.name, url, description: invite.guild.description || "", members: invite.approximate_member_count || 0, group: "🎮 UK & Irish gaming", queries: ["Claude's starter lead"]});
+    await sleep(1500);
+  }
+  console.error(`${seen.size} servers from ${queryCount} searches and ${SEEDS.invites.length} starter leads (${failed} searches returned nothing)`);
 
   const scored = [...seen.values()]
     .filter(s => s.members >= MIN_MEMBERS && GAMING.test(`${s.name} ${s.description}`) && !SKIP.test(`${s.name} ${s.description}`))

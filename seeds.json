@@ -1,0 +1,7 @@
+{
+  "_about": "Starter research from Claude for searches that came back empty (rule of 9 Oct 2026). The bot searches these phrases and checks these invites, then carries on by itself. Add more leads here any time.",
+  "community": {
+    "queries": ["open a ticket to apply", "apply via ticket", "staff applications ticket", "trial staff", "trial moderator", "helper applications", "staff team recruiting", "vortex network", "simhobby", "farming sim rp staff", "ets2 community staff", "sim racing league staff"],
+    "invites": []
+  }
+}
