@@ -11,7 +11,7 @@ $seenFile = "G:\AI_Projects\Job Results\AI only\yes-seen.json"
 
 # Uses popup.ps1 (our own pop-up with sound): Windows notifications don't show on this PC.
 function Show-Alert([string]$Title, [string]$Body) {
-    Start-Process powershell -WindowStyle Hidden -ArgumentList @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', (Join-Path $PSScriptRoot 'popup.ps1'), '-Title', $Title, '-Body', $Body)
+    Start-Process powershell -WindowStyle Hidden -ArgumentList @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', (Join-Path $PSScriptRoot 'popup.ps1'), '-Title', ('"' + $Title + '"'), '-Body', ('"' + ($Body -replace '"', "'") + '"'))
 }
 
 # The job's name plus its first link, read from the Yes file.
