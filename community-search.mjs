@@ -60,6 +60,8 @@ const TRIED = (process.env.TRIED_VTCS || "").split(/[\n,]/).map(n => n.trim().to
 const SKIP = /web3|crypto|nft|blockchain|nsfw|18\+|adult|dating/i;
 const LOCAL = /\b(uk|u\.k\.|united kingdom|british|britain|england|scotland|wales|ireland|irish|northern ireland|gmt|bst)\b/i;
 const HIRING = /\b(staff applications?|staff apps|apply for staff|we('re| are) (hiring|recruiting)|hiring|recruiting (staff|mods?|moderators|helpers|developers?)|looking for (staff|mods?|moderators|helpers|developers?|admins?|support( staff)?|hr( staff)?|media( team)?|event (staff|team)|recruiters?|application reviewers?|bot (devs?|developers?)|web ?(designers?|developers?))|bot developers? (wanted|needed)|(discord )?(managers?|admins?|moderators|mods|helpers) (wanted|needed)|join (our|the) (staff|team)|(staff|mod|moderator|support|hr|media|event|recruitment|helper) (team )?applications? (are )?open|applications? (are )?open)\b/i;
+// Ticket route (9 Oct 2026): servers where you open a ticket to apply or to be given a job.
+const TICKET_JOB = /\b(open (a|an) (ticket|application) to (apply|join|get (a )?(job|role|task))|apply (via|through|by|in) (a )?tickets?|tickets? (to|for) (apply|applications?|staff|jobs?|roles?))\b/i;
 const MIN_MEMBERS = 100;
 const SHORTLIST = 20;
 const PER_GROUP = 5;
@@ -97,7 +99,7 @@ async function listings(query) {
  * Every role has tests in tests/roles.test.mjs.
  */
 export function openJob(description) {
-  const hiring = description.match(HIRING);
+  const hiring = description.match(HIRING) || description.match(TICKET_JOB);
   return hiring && WANTED_ROLE.test(description) ? hiring[0] : null;
 }
 

@@ -20,12 +20,16 @@ const OPEN = {
   "helper": "Helpers needed for our new FS22 server!",
   "recruitment": "VTC recruitment team applications are open.",
   "application reviewer": "Looking for application reviewers to help our staff.",
+  "ticket route: apply": "UK ETS2 community. Want to join the team? Open a ticket to apply!",
+  "ticket route: get a job": "FS22 server - open a ticket to get a job with our staff.",
+  "ticket route: tickets for roles": "Gaming hub, tickets for staff roles in #support.",
 };
 
 const NOT_OPEN = {
   "friendly staff only": "Official Discord with friendly staff and weekly events.",
   "no job at all": "Official Farming Simulator server by GIANTS Software",
   "hiring but no role he wants": "Pokemon restock alerts, we are hiring!",
+  "ticket for help only": "Need help? Open a ticket in #support and our team will reply.",
 };
 
 for (const [role, description] of Object.entries(OPEN)) {

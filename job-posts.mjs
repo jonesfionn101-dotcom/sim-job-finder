@@ -9,7 +9,7 @@
 const API = "https://api.truckersmp.com/v2/vtc";
 const POST_DAYS = 30;
 
-const JOB_POST = /\b(hiring|recruit\w*|vacanc\w*|positions? (open|available)|applications? (are )?open|looking for|join (our|the) (staff|team)|wanted|needed)\b/i;
+const JOB_POST = /\b(hiring|recruit\w*|vacanc\w*|positions? (open|available)|applications? (are )?open|looking for|join (our|the) (staff|team)|wanted|needed|open (a|an) ticket to (apply|join)|apply (via|through|by|in) (a )?tickets?)\b/i;
 // Staff roles only: an ordinary driver opening isn't a behind-the-scenes job.
 export const STAFF_ROLE = /\b(staff|moderators?|admins?|hr|human resources|recruit(ers|ment)|event (team|staff|managers?)|media( team)?|developers?|designers?|managers?|support|dispatch\w*|convoy (control|team))\b/i;
 export const INTERNAL = /\b(internal(ly)?|existing (staff|members|drivers)|current (staff|members|drivers)|(staff|drivers|members) only|only (open )?(to|for) (our )?(staff|drivers|members)|must (already )?be (a |an )?(driver|member|employee) (of|at|with))\b/i;
