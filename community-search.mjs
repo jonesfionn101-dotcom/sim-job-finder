@@ -44,7 +44,7 @@ const TOPIC_OF = {
 // topics. The rules for what counts as an open job never get looser.
 const WIDEN = Number(process.env.WIDEN || 0);
 const MORE_TOPICS = [
-  {"🚜 Farming": ["fs25", "farm sim"], "🚚 Trucking & transport": ["ats", "vtc", "bus simulator"], "🏎️ Other sims": ["assetto corsa", "flight sim"], "🎮 UK & Irish gaming": ["fivem uk", "minecraft uk"]},
+  {"🚜 Farming": ["fs22 uk", "farm sim 22"], "🚚 Trucking & transport": ["ats", "vtc", "bus simulator"], "🏎️ Other sims": ["assetto corsa", "flight sim"], "🎮 UK & Irish gaming": ["fivem uk", "minecraft uk"]},
   {"🚜 Farming": ["farming community", "agriculture"], "🚚 Trucking & transport": ["trucking", "convoy", "train sim"], "🏎️ Other sims": ["police roleplay", "racing league"], "🎮 UK & Irish gaming": ["gta rp", "roblox uk", "gaming community", "esports"]},
 ];
 for (const extra of MORE_TOPICS.slice(0, WIDEN)) {
