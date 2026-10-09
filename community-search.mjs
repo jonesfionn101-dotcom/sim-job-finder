@@ -157,6 +157,19 @@ async function main() {
   for (const page of SHARD === 0 && !process.env.MERGE ? SEEDS.listPages || [] : []) {
     const html = await fetch(page, {signal: AbortSignal.timeout(20000), headers: {"user-agent": "curl/8.0"}}).then(r => r.ok ? r.text() : "").catch(() => "");
     listed.push(...[...html.matchAll(/discord(?:\.gg|(?:app)?\.com\/invite)\/([A-Za-z0-9-]+)/g)].map(m => m[1]));
+    // List sites with their own server pages (e.g. Discodus /server/<id>): read each page's
+    // text gently. Their /join/ links are off-limits in robots.txt, so the page itself is the link.
+    const origin = new URL(page).origin;
+    for (const id of [...new Set([...html.matchAll(/href="\/server\/(\d{15,20})"/g)].map(m => m[1]))].slice(0, 30)) {
+      const url = `${origin}/server/${id}`;
+      if (seen.has(url)) continue;
+      const body = await fetch(url, {signal: AbortSignal.timeout(20000), headers: {"user-agent": "curl/8.0"}}).then(r => r.ok ? r.text() : "").catch(() => "");
+      const name = (body.match(/<meta property="og:title" content="([^"]+)/) || [])[1]?.replace(/ Discord Server$/, "");
+      const text = body.replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>/g, " ").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").slice(0, 3000);
+      const members = Number((text.match(/([\d,]+)\s+members/i) || [])[1]?.replace(/,/g, "")) || MIN_MEMBERS;
+      if (name) seen.set(url, {name, url, description: text, members, group: "🎮 UK & Irish gaming", queries: [`list page ${origin}`]});
+      await sleep(1500);
+    }
   }
   if (listed.length) console.error(`${new Set(listed).size} servers read from ${SEEDS.listPages.length} list pages`);
   for (const code of SHARD === 0 && !process.env.MERGE ? [...new Set([...SEEDS.invites, ...listed])] : []) {

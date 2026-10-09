@@ -65,3 +65,11 @@ for (const file of fs.readdirSync(YES).filter(f => !f.startsWith("Notes - "))) {
   console.log(`  moved: ${file}`);
 }
 if (moved) console.log(`Second check moved ${moved} wrong Yes entries to No`);
+
+// Last in the line (9 Oct 2026): every result must sit in exactly ONE folder.
+// If the same entry is in both, the stricter answer (No) wins.
+for (const file of fs.readdirSync(YES).filter(f => fs.existsSync(path.join(NO, f)))) {
+  fs.rmSync(path.join(YES, file));
+  console.log(`  in both folders, kept in No: ${file}`);
+}
+console.log(`Final check: ${fs.readdirSync(YES).length} in Yes, ${fs.readdirSync(NO).length} in No, none in both.`);
