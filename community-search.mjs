@@ -160,7 +160,7 @@ async function main() {
     // List sites with their own server pages (e.g. Discodus /server/<id>): read each page's
     // text gently. Their /join/ links are off-limits in robots.txt, so the page itself is the link.
     const origin = new URL(page).origin;
-    for (const id of [...new Set([...html.matchAll(/href="\/server\/(\d{15,20})"/g)].map(m => m[1]))].slice(0, 30)) {
+    for (const id of [...new Set([...html.matchAll(/href="\/server\/(\d{15,20})"/g)].map(m => m[1]))].slice(0, 60)) {
       const url = `${origin}/server/${id}`;
       if (seen.has(url)) continue;
       const body = await fetch(url, {signal: AbortSignal.timeout(20000), headers: {"user-agent": "curl/8.0"}}).then(r => r.ok ? r.text() : "").catch(() => "");

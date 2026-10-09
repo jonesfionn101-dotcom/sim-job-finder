@@ -53,7 +53,7 @@ async function invite(code) {
 }
 
 // 1 + 2: AI ideas, checked.
-const ideas = await ask(`I look for English-speaking UK or Irish Discord communities (farming sim, truck sim, sim racing, FiveM/GTA RP, UK gaming) that are hiring staff right now (moderators, support, ticket team, HR, admin assistant, events, media, developers) and accept outsiders.
+const ideas = await ask(`I look for English-speaking UK or Irish Discord communities (farming sim, truck sim, sim racing, FiveM/GTA RP, UK gaming) that are hiring staff right now (moderators, support, ticket team, HR, admin assistant, events, media, developers) and accept outsiders (no need to be a driver or member first).
 Already tried phrases: ${[...known.queries].slice(-60).join("; ")}.
 Reply with ONLY JSON: {"queries": [10 new 2-5 word search phrases], "tags": [8 single-word or hyphenated tags a Discord server list site might use, e.g. "staff-applications"]}`);
 for (const query of (ideas.queries || []).map(q => String(q).toLowerCase().trim()).filter(q => q && q.length <= 60 && !known.queries.has(q)).slice(0, 10)) {
