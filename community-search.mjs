@@ -57,15 +57,16 @@ for (const [group, topics] of Object.entries(TOPIC_OF)) {
   for (const topic of topics) for (const words of JOB_WORDS) QUERIES[group].push(`${topic} ${words}`);
 }
 // The kinds of job he wants (all server-side, no gameplay needed).
-const WANTED_ROLE = /\b(staff|moderators?|mods|admins?|support|helpers?|hr|human resources|developers?|devs?|bot|web(site)?|designers?|media|events?|community managers?|managers?|team|recruit(ers?|ment)|application reviewers?|reviewers?)\b/i;
+const WANTED_ROLE = /\b(staff|moderators?|mods|admins?|support|helpers?|hr|human resources|developers?|devs?|bot|web(site)?|designers?|media|events?|community managers?|managers?|team|recruit(ers?|ment)|application reviewers?|reviewers?|secretar(y|ies)|(admin|staff) assistants?|note[- ]?takers?|minute[- ]?takers?|transcri\w+|documentation|ticket (team|staff|handlers?|loggers?|managers?)|clerks?)\b/i;
 // Communities already joined (private TRIED_VTCS secret): never listed.
 const TRIED = (process.env.TRIED_VTCS || "").split(/[\n,]/).map(n => n.trim().toLowerCase()).filter(Boolean);
 const SKIP = /web3|crypto|nft|blockchain|nsfw|18\+|adult|dating/i;
 const LOCAL = /\b(uk|u\.k\.|united kingdom|british|britain|england|scotland|wales|ireland|irish|northern ireland|gmt|bst)\b/i;
-const HIRING = /\b(staff applications?|staff apps|apply for staff|we('re| are) (hiring|recruiting)|hiring|recruiting (staff|mods?|moderators|helpers|developers?)|looking for (staff|mods?|moderators|helpers|developers?|admins?|support( staff)?|hr( staff)?|media( team)?|event (staff|team)|recruiters?|application reviewers?|bot (devs?|developers?)|web ?(designers?|developers?))|bot developers? (wanted|needed)|(discord )?(managers?|admins?|moderators|mods|helpers) (wanted|needed)|join (our|the) (staff|team)|(staff|mod|moderator|support|hr|media|event|recruitment|helper) (team )?applications? (are )?open|applications? (are )?open)\b/i;
+const HIRING = /\b(staff applications?|staff apps|apply for staff|we('re| are) (hiring|recruiting)|hiring|recruiting (staff|mods?|moderators|helpers|developers?)|looking for (an? )?(secretar(y|ies)|(admin|staff) assistants?|note[- ]?takers?|minute[- ]?takers?|ticket (team|staff|handlers?|managers?)|staff|mods?|moderators|helpers|developers?|admins?|support( staff)?|hr( staff)?|media( team)?|event (staff|team)|recruiters?|application reviewers?|bot (devs?|developers?)|web ?(designers?|developers?))|bot developers? (wanted|needed)|(discord )?(managers?|admins?|moderators|mods|helpers) (wanted|needed)|join (our|the) (staff|team)|(staff|mod|moderator|support|hr|media|event|recruitment|helper) (team )?applications? (are )?open|applications? (are )?open)\b/i;
 // Ticket route (9 Oct 2026): servers where you open a ticket to apply or to be given a job.
 const TICKET_JOB = /\b(open (a|an) (ticket|application) to (apply|join|get (a )?(job|role|task))|apply (via|through|by|in) (a )?tickets?|tickets? (to|for) (apply|applications?|staff|jobs?|roles?))\b/i;
 const MIN_MEMBERS = 100;
+const PARALLEL = 4;
 const SHORTLIST = 20;
 const PER_GROUP = 5;
 
@@ -110,18 +111,21 @@ async function main() {
   const seen = new Map();
   let failed = 0;
   const queryCount = Object.values(QUERIES).flat().length;
-  for (const [group, queries] of Object.entries(QUERIES)) {
-    for (const query of queries) {
-      const found = await listings(query);
+  // Several searches at once (9 Oct 2026), each worker still pausing between its own requests.
+  const jobs = Object.entries(QUERIES).flatMap(([group, queries]) => queries.map(query => ({group, query})));
+  const worker = async () => {
+    for (let job = jobs.shift(); job; job = jobs.shift()) {
+      const found = await listings(job.query);
       if (!found.length) failed++;
       found.forEach(server => {
         const known = seen.get(server.url);
         // A server keeps the first group that found it.
-        seen.set(server.url, {...server, group: known?.group || group, queries: [...(known?.queries || []), query]});
+        seen.set(server.url, {...server, group: known?.group || job.group, queries: [...(known?.queries || []), job.query]});
       });
       await sleep(1500);
     }
-  }
+  };
+  await Promise.all(Array.from({length: PARALLEL}, worker));
   for (const code of SEEDS.invites) {
     const invite = await fetch(`https://discord.com/api/v10/invites/${code}?with_counts=true`, {signal: AbortSignal.timeout(20000), headers: {"user-agent": "curl/8.0"}})
       .then(r => r.ok ? r.json() : null).catch(() => null);
