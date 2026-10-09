@@ -1,0 +1,28 @@
+name: Lead feeder (new information for the searches)
+
+# Every hour: a free AI plus GitHub code search find NEW leads and add them
+# to seeds.json, so the searches always work from fresh information.
+on:
+  schedule:
+    - cron: "20 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  feed:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: node lead-feeder.mjs
