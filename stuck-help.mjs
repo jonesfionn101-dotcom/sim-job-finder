@@ -43,10 +43,21 @@ Suggest 10 NEW short search phrases (2-5 words each) likely to find such servers
 
 const fresh = (await askAnotherAI().catch(() => [])).filter(q => !tried.includes(q)).slice(0, 10);
 if (fresh.length) {
-  seeds.community.queries.push(...fresh);
-  fs.writeFileSync("seeds.json", `${JSON.stringify(seeds, null, 2)}\n`);
   sh(`git config user.name "github-actions[bot]" && git config user.email "41898282+github-actions[bot]@users.noreply.github.com"`);
-  sh(`git add seeds.json && git commit -qm "Stuck help: another AI added ${fresh.length} search phrases" && git pull -q --rebase && git push -q`);
+  // seeds.json may change at the same time (Claude adds leads too): start from the
+  // newest copy each try, re-add the phrases, and never fail the run over it.
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      sh("git fetch -q origin main && git reset -q --hard origin/main");
+      const latest = JSON.parse(fs.readFileSync("seeds.json", "utf8"));
+      latest.community.queries.push(...fresh.filter(q => !latest.community.queries.includes(q)));
+      fs.writeFileSync("seeds.json", `${JSON.stringify(latest, null, 2)}\n`);
+      sh(`git add seeds.json && git commit -qm "Stuck help: another AI added ${fresh.length} search phrases" && git push -q origin HEAD:main`);
+      break;
+    } catch (error) {
+      console.error(`saving the new phrases failed (try ${attempt} of 3): ${error.message.split("\n")[0]}`);
+    }
+  }
 }
 
 const note = [
