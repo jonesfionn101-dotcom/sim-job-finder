@@ -44,6 +44,7 @@ jobs:
           TRIED_VTCS: ${{ secrets.TRIED_VTCS }}
         run: node rules-search.mjs
       - name: Post the results as an issue
+        if: steps.search.outputs.blocked != 'yes'
         env:
           GH_TOKEN: ${{ github.token }}
           BODY: ${{ steps.search.outputs.body }}

@@ -147,6 +147,12 @@ async function staffCount(id) {
 async function main() {
   const companies = await ukCompanies();
   console.error(`checking ${companies.length} UK companies`);
+  // Trucky sometimes refuses GitHub's servers. Keep the last good list instead of posting "0 found".
+  if (!companies.length) {
+    console.error("Trucky refused every request: keeping the last list");
+    if (process.env.GITHUB_OUTPUT) fs.appendFileSync(process.env.GITHUB_OUTPUT, "blocked=yes\n");
+    return;
+  }
   const candidates = [];
   const dropped = [];
 
