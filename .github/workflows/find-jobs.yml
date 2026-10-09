@@ -3,7 +3,7 @@ name: Find open-source jobs
 on:
   schedule:
     # Every 2 hours, day and night.
-    - cron: "7 * * * *"
+    - cron: "*/10 * * * *"
   workflow_dispatch:
 
 permissions:
