@@ -1,0 +1,65 @@
+name: Worldwide test (rules check)
+
+# One-off check that the pipeline works: the same strict community search
+# with the UK rule switched off (English, staff role open to outsiders, etc.
+# all still apply). Run by hand; results go to a "📋 Worldwide test" issue.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  search:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3]
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - name: Search a quarter, worldwide
+        timeout-minutes: 20
+        env:
+          WORLDWIDE: 1
+          WIDEN: 2
+          SHARD: ${{ matrix.shard }}
+          SHARDS: 4
+          COLLECT_ONLY: found-${{ matrix.shard }}.json
+        run: node community-search.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: found-${{ matrix.shard }}
+          path: found-${{ matrix.shard }}.json
+
+  post:
+    needs: search
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - uses: actions/download-artifact@v4
+        with:
+          path: found
+      - id: comm
+        env:
+          TRIED_VTCS: ${{ secrets.TRIED_VTCS }}
+          WORLDWIDE: 1
+          WIDEN: 2
+          MERGE: found
+        run: node community-search.mjs > /dev/null
+      - env:
+          GH_TOKEN: ${{ github.token }}
+          BODY: ${{ steps.comm.outputs.body }}
+          HIRING: ${{ steps.comm.outputs.hiring }}
+        run: |
+          printf '%s\n' "$BODY" > ww-body.md
+          bash .github/post-latest.sh "Worldwide test" "$HIRING hiring worldwide" ww-body.md
