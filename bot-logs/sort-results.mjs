@@ -26,10 +26,12 @@ let yes = 0, no = 0;
 for (const {title, body} of issues) {
   const search = safe(title.replace(/^📋\s*/, "").split(":")[0]);
   const [main, ruledOut = ""] = body.split("<details>");
+  // Results from Claude's own fresh searches are labelled so they stand out.
+  const fresh = body.startsWith("🆕") ? `🆕 New information (searched by Claude, ${title.match(/updated ([^)]+)/)?.[1] || "today"})\n` : "";
   for (const section of main.split(/^### /m).slice(1)) {
     const name = safe(section.split("\n")[0].replace(/^\d+\.\s*/, ""));
     fs.rmSync(path.join(NO, `${search} - ${name}.md`), {force: true}); // moved: no longer a no
-    fs.writeFileSync(path.join(YES, `${search} - ${name}.md`), `# ✅ ${name}\nFrom: ${search} (${title.match(/\(updated [^)]+\)/)?.[0] || ""})\n\n${section.split("\n").slice(1).join("\n").trim()}\n`);
+    fs.writeFileSync(path.join(YES, `${search} - ${name}.md`), `# ✅ ${name}\n${fresh}From: ${search} (${title.match(/\(updated [^)]+\)/)?.[0] || ""})\n\n${section.split("\n").slice(1).join("\n").trim()}\n`);
     yes++;
   }
   for (const line of ruledOut.split("\n").filter(l => l.startsWith("- "))) {
@@ -37,7 +39,7 @@ for (const {title, body} of issues) {
     if (!why.length) continue;
     // A key that matches a Yes entry (same search, same name) moves it to No.
     for (const file of fs.readdirSync(YES).filter(f => f.startsWith(`${search} - ${safe(name)}`))) fs.rmSync(path.join(YES, file));
-    fs.writeFileSync(path.join(NO, `${search} - ${safe(name)}.md`), `# ❌ ${name}\nFrom: ${search}\n\nWhy not: ${why.join(": ")}\n`);
+    fs.writeFileSync(path.join(NO, `${search} - ${safe(name)}.md`), `# ❌ ${name}\n${fresh}From: ${search}\n\nWhy not: ${why.join(": ")}\n`);
     no++;
   }
 }
