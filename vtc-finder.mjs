@@ -22,6 +22,7 @@ const MIN_MEMBERS = Number(process.env.VTC_MIN_MEMBERS || 60);
 const WELL_KNOWN_MEMBERS = Number(process.env.VTC_WELL_KNOWN || 150);
 // Only VTCs with a convoy or event within this many days either side of today.
 const ACTIVE_DAYS = Number(process.env.VTC_ACTIVE_DAYS || 7);
+import {outsiderJobPosts, jobPostLine} from "./job-posts.mjs";
 const fs = await import("node:fs");
 // VTCs the user has already joined or applied to, by name - not shown again.
 // Communities already joined or applied to. Kept in the TRIED_VTCS secret
@@ -140,7 +141,7 @@ async function main() {
     const lastEvent = why ? null : await recentEvent(id);
     if (why) dropped.push(`${vtc.name}: ${why}`);
     else if (!lastEvent) dropped.push(`${vtc.name}: no convoy or event within ${ACTIVE_DAYS} days`);
-    else kept.push({...vtc, lastEvent});
+    else kept.push({...vtc, lastEvent, jobs: await outsiderJobPosts(id)});
     await sleep(250);
   }
 
@@ -156,6 +157,7 @@ async function main() {
     if (vtc.slogan) out.push(`- "${vtc.slogan.trim()}"`);
     if (vtc.socials?.discord) out.push(`- Discord: ${vtc.socials.discord}`);
     if (vtc.website) out.push(`- Site: ${vtc.website}`);
+    vtc.jobs.slice(0, 3).forEach(post => out.push(`- ${jobPostLine(post)}`));
     out.push(`- **Ask first:** "How do you log jobs — TruckersMP logging, a website, or an app I'd have to install?" An installed tracker is a no.`);
     out.push("");
   });
