@@ -5,3 +5,4 @@ Every automatic search: when it ran (Irish time), how it ended, and what it foun
 | Started | Finished | Search | Result | Found |
 |---|---|---|---|---|
 | 09 Oct 2026 20:21 | 20:22 | Lead feeder (new information for the searches) | success | Lead feeder: 12 new leads (10 phrases, 1 list pages, 1 servers) |
+| 09 Oct 2026 20:39 | 20:40 | Lead feeder (new information for the searches) | success | Lead feeder: 9 new leads (8 phrases, 1 list pages, 0 servers) |
