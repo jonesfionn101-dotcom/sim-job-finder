@@ -17,7 +17,8 @@ const YES = path.join(ROOT, "Yes");
 const NO = path.join(ROOT, "No");
 [YES, NO].forEach(dir => fs.mkdirSync(dir, {recursive: true}));
 
-const safe = text => text.replace(/[<>:"/\\|?*\u0000-\u001f`]/g, "").replace(/\s+/g, " ").trim().slice(0, 90);
+// Plain filenames only: brackets, # and dashes like "—" made files impossible to move.
+const safe = text => text.replace(/[^A-Za-z0-9 &()._,'-]/g, " ").replace(/\s+/g, " ").trim().slice(0, 80).trim();
 const issues = JSON.parse(execSync(`gh issue list --repo ${REPO} --state open --json title,body --limit 50`, {encoding: "utf8"}))
   .filter(issue => issue.title.startsWith("📋"));
 
@@ -61,5 +62,6 @@ for (const file of fs.readdirSync(YES).filter(f => !f.startsWith("Notes - "))) {
   fs.writeFileSync(path.join(NO, file), text.replace(/^# ✅/, "# ❌") + `\nWhy not (second check): ${check[2]}\n`);
   fs.rmSync(path.join(YES, file));
   moved++;
+  console.log(`  moved: ${file}`);
 }
 if (moved) console.log(`Second check moved ${moved} wrong Yes entries to No`);
