@@ -155,8 +155,10 @@ async function main() {
     else if (!lastEvent) dropped.push(`${vtc.name}: no convoy or event within ${ACTIVE_DAYS} days`);
     else {
       const internal = [];
-      kept.push({...vtc, lastEvent, jobs: await outsiderJobPosts(id, undefined, internal)});
-      internal.forEach(post => dropped.push(`${vtc.name}: internal-only role "${post.title}" (${post.url})`));
+      const jobs = await outsiderJobPosts(id, undefined, internal);
+      // Only VTCs with a staff role open to outsiders count (9 Oct 2026).
+      if (jobs.length) kept.push({...vtc, lastEvent, jobs});
+      else dropped.push(`${vtc.name}: no staff role open to outsiders${internal.length ? ` (internal-only: "${internal[0].title}")` : ""}`);
     }
     await sleep(250);
   }
