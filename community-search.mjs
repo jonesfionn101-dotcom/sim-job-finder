@@ -151,7 +151,15 @@ async function main() {
       seen.set(server.url, {...server, group: known?.group || server.group, queries: [...(known?.queries || []), ...server.queries]});
     }
   }
-  for (const code of SHARD === 0 && !process.env.MERGE ? SEEDS.invites : []) {
+  // Deep dive (9 Oct 2026): Claude finds web pages that LIST servers; the bot reads
+  // every invite on them and checks each server itself.
+  const listed = [];
+  for (const page of SHARD === 0 && !process.env.MERGE ? SEEDS.listPages || [] : []) {
+    const html = await fetch(page, {signal: AbortSignal.timeout(20000), headers: {"user-agent": "curl/8.0"}}).then(r => r.ok ? r.text() : "").catch(() => "");
+    listed.push(...[...html.matchAll(/discord(?:\.gg|(?:app)?\.com\/invite)\/([A-Za-z0-9-]+)/g)].map(m => m[1]));
+  }
+  if (listed.length) console.error(`${new Set(listed).size} servers read from ${SEEDS.listPages.length} list pages`);
+  for (const code of SHARD === 0 && !process.env.MERGE ? [...new Set([...SEEDS.invites, ...listed])] : []) {
     const invite = await fetch(`https://discord.com/api/v10/invites/${code}?with_counts=true`, {signal: AbortSignal.timeout(20000), headers: {"user-agent": "curl/8.0"}})
       .then(r => r.ok ? r.json() : null).catch(() => null);
     if (!invite?.guild) continue;
