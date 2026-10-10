@@ -27,7 +27,7 @@ const COMPANY_ORGS = ["uber", "justeattakeaway", "justeat", "deliveroo", "doorda
 const SKIP = /prettier|wasp-lang|ets2la|crypto|web3|blockchain|nft/i;
 const AI_BAN = /(no|not accept|prohibit|ban|forbid)\w*[^.\n]{0,60}\b(AI|LLM|ChatGPT|Copilot|generated)\b|\b(AI|LLM)[- ]generated[^.\n]{0,40}(not|won't|will not) be (accepted|merged)/i;
 const ACTIVE_DAYS = 14;
-const TRUCK = /truck|ets2|ats|scs|vtc|truckersmp|trucklinemp/i;
+const TRUCK = /truck|ets2|\bats\b|scs|vtc|truckersmp|trucklinemp/i;
 const SHORTLIST = 8;
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));

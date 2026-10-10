@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# Blocks a commit if any code file has broken characters or a script no longer loads.
+node --test tests/no-broken-characters.test.mjs >/dev/null 2>&1 || {
+  echo "Commit blocked: broken characters or a script that won't load. Run: node --test tests/no-broken-characters.test.mjs"
+  exit 1
+}
