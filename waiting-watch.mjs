@@ -24,6 +24,7 @@ const WAITING_ON_REPLY = [
   "A.P. 101 Gaming - asked in general chat how to contact staff (10 Oct). venda13 [ABOO] offered to help at 3:32 PM - check if staff.",
   "FSC (Farming Simulator Community) - setup bot broken; he reported it in chat and offered to help fix it (10 Oct). Waiting.",
   "VTLog.net - website ticket (Anything else) sent 10 Oct: asked about staff roles + offered the tracker bot. Waiting - check vtlog.net for replies.",
+  "Krone Liner - VTC Management ticket open 10 Oct 4:28 PM (General Manager + Owner pinged): asked about non-driver staff roles + offered tracker bot. Told them his power may go off. Waiting.",
   "BritishAce Community Server - asked in general chat how to open a ticket (10 Oct); idea: tier-tracker bot for their 3-tier system. Waiting.",
   "Yapton & District (bus sim) - emails checked and look GENUINE (domain is theirs); dylxn gave hiring emails; he asked dylxn 4 checking questions (10 Oct). Waiting.",
   "United Convoys - ticket answered fast (passes 24h rule). Applied via their apply channel (10 Oct); they check applications once a week.",
