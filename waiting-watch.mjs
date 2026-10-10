@@ -21,7 +21,7 @@ const WAITING_ON_REPLY = [
   "TruckersHub - Event Management ticket open (10 Oct): suggested Convoy-mode events + asked about the tracker bot, waiting.",
   "MrSealyPeeps - suggestion ticket open (10 Oct): offered the tracker bot + asked about staff roles, waiting.",
   "BritishAce Community Server - asked in general chat how to open a ticket (10 Oct); idea: tier-tracker bot for their 3-tier system. Waiting.",
-  "Yapton & District (bus sim) - asked in general chat how to open a ticket (10 Oct). No personal info there (rule 10). Waiting.",
+  "Yapton & District (bus sim) - ⚠️ POTENTIAL SCAM check: dylxn gave hiring emails; he asked dylxn 4 checking questions (10 Oct). Waiting. Do not email yet.",
   "United Convoys - ticket answered fast (passes 24h rule). Applied via their apply channel (10 Oct); they check applications once a week.",
   "TruckersMP - Addon Team/Artist: applications closed; needs a website login. Their site blocks bots, so check truckersmp.com/recruitment yourself now and then.",
 ];
