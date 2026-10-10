@@ -14,3 +14,4 @@ Every automatic search: when it ran (Irish time), how it ended, and what it foun
 | 10 Oct 2026 00:28 | 00:29 | Work on bot-tasks | success | - |
 | 10 Oct 2026 02:58 | 02:58 | Clear-out (save everything first) | success | - |
 | 10 Oct 2026 03:12 | 03:13 | Find recruiting VTCs | success | VTC shortlist: 0 recruiting (updated 10 Oct 03:13) |
+| 10 Oct 2026 03:12 | 03:14 | Find open-source jobs | success | Job shortlist: 1 found (updated 10 Oct 03:13) |
