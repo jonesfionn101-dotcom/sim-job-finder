@@ -130,11 +130,18 @@ const LOG = new URL("../search-log.md", import.meta.url);
 if (fs.existsSync(LOG)) fs.copyFileSync(LOG, path.join(ROOT, "Search log.md"));
 
 // "Servers to join.md": one list of every server waiting in To check, with its join link (10 Oct 2026).
-const waiting = fs.readdirSync(YES).filter(f => f.endsWith(".md")).map(f => {
+// The bot sorts each one itself: Best match (every rule passed) or Close match (some rules dropped).
+const best = [], close = [];
+for (const f of fs.readdirSync(YES).filter(f => f.endsWith(".md"))) {
   const text = fs.readFileSync(path.join(YES, f), "utf8");
   const link = (text.match(/https:\/\/discord\.(gg|com\/invite)\/[^\s)]+/) || text.match(/https?:\/\/[^\s)]+/) || ["no link"])[0];
-  return `- ${f.replace(/\.md$/, "")}: ${link}`;
-});
+  const dropped = (text.match(/Rules dropped: ([^\n]+)/) || [])[1];
+  (dropped ? close : best).push(`- ${f.replace(/\.md$/, "")}: ${link}${dropped ? ` (check yourself: ${dropped.replace(/ - check these yourself$/, "")})` : ""}`);
+}
+const waiting = [
+  "## ✅ Best match (every rule passed)", "", ...(best.length ? best : ["None yet."]), "",
+  "## 🟡 Close match (some rules dropped)", "", ...(close.length ? close : ["None yet."]),
+];
 fs.writeFileSync(path.join(ROOT, "Servers to join.md"), [
   `# Servers to join (updated ${new Date().toLocaleString("en-IE", {timeZone: "Europe/Dublin"})})`,
   "",

@@ -33,7 +33,9 @@ if (Test-Path -LiteralPath $seenFile) { try { $seen = @(Get-Content -LiteralPath
 $now = @(Get-ChildItem -LiteralPath $yes -File -ErrorAction SilentlyContinue | Where-Object { -not $_.Name.StartsWith("Notes - ") } | ForEach-Object { $_.Name })
 $new = @($now | Where-Object { $seen -notcontains $_ })
 foreach ($name in $new) {
-    Show-Alert "New job found!" (Get-JobSummary $name) $name
+    # The bot picks the list itself (10 Oct 2026): every rule passed = Best match, rules dropped = Close match.
+    $list = if ((Get-Content -LiteralPath (Join-Path $yes $name) -Raw) -match 'Rules dropped: ') { "Close match" } else { "Best match" }
+    Show-Alert "New job: $list" (Get-JobSummary $name) $name
     Start-Sleep -Milliseconds 800
 }
 ConvertTo-Json @($now) | Set-Content -LiteralPath $seenFile -Encoding utf8
