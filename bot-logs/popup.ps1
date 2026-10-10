@@ -40,7 +40,8 @@ function Move-Job([string]$To) {
 }
 $yesButton = New-Button "Yes" 16 70 { Move-Job "Yes" }
 $noButton = New-Button "No" 94 70 { Move-Job "No" }
-$openButton = New-Button "Open details" 172 120 { Start-Process notepad.exe (Join-Path "$root\To check" $Job) }
+# Reading the details shouldn't cost him the answer: stay up until he picks Yes, No or Later.
+$openButton = New-Button "Open details" 172 120 { Start-Process notepad.exe (Join-Path "$root\To check" $Job); $timer.Stop() }
 $laterButton = New-Button "Later" 300 80 { $form.Close() }
 if (-not $Job) { $yesButton.Enabled = $false; $noButton.Enabled = $false; $openButton.Enabled = $false }
 $form.Controls.AddRange(@($titleLabel, $bodyLabel, $yesButton, $noButton, $openButton, $laterButton))
