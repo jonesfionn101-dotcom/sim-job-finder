@@ -88,7 +88,14 @@ function Request-Reminder {
 $laterButton = New-Button "Later" 300 80 { $form.Close() }
 $form.Add_FormClosed({ Request-Reminder })
 $form.Add_FormClosing({ $voice.SpeakAsyncCancelAll() })
-if (-not $Job) { $yesButton.Enabled = $false; $noButton.Enabled = $false; $openButton.Enabled = $false }
+# Updates (no job): hide the job buttons and give the message the room instead.
+if (-not $Job) {
+    $yesButton.Visible = $false; $noButton.Visible = $false; $openButton.Visible = $false
+    $bodyLabel.Size = New-Object Drawing.Size(390, 80)
+    $laterButton.Text = "OK"; $laterButton.Location = New-Object Drawing.Point(16, 128)
+    $form.Size = New-Object Drawing.Size(420, 172)
+    $form.Location = New-Object Drawing.Point(($area.Right - 440), ($area.Bottom - 192))
+}
 $form.Controls.AddRange(@($titleLabel, $bodyLabel, $yesButton, $noButton, $openButton, $laterButton))
 
 # Stays up for a minute; "Later" (or the timeout) leaves the job in "To check".
