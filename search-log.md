@@ -47,3 +47,4 @@ Every automatic search: when it ran (Irish time), how it ended, and what it foun
 | 10 Oct 2026 23:24 | 23:28 | Find open-source jobs | success | Job shortlist: 0 found (updated 10 Oct 23:28) |
 | 10 Oct 2026 23:51 | 23:52 | Find recruiting VTCs | success | VTC shortlist: 0 recruiting (updated 10 Oct 23:52) |
 | 10 Oct 2026 23:55 | 23:55 | Work on bot-tasks | success | - |
+| 11 Oct 2026 00:39 | 00:42 | Lead feeder (new information for the searches) | success | - |
