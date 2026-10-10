@@ -35,7 +35,15 @@ function New-Button([string]$Text, [int]$X, [int]$Width, [scriptblock]$OnClick) 
 }
 function Move-Job([string]$To) {
     $from = Join-Path "$root\To check" $Job
-    if ($Job -and (Test-Path -LiteralPath $from)) { Move-Item -LiteralPath $from -Destination (Join-Path "$root\$To" $Job) -Force }
+    if ($Job -and (Test-Path -LiteralPath $from)) {
+        # Yes also opens the server's page so he can join and apply straight away.
+        # Prefer a Discord invite; otherwise the first link (e.g. the server's list page).
+        $text = Get-Content -LiteralPath $from -Raw
+        $link = [regex]::Match($text, 'https://discord\.(gg|com/invite)/\S+').Value
+        if (-not $link) { $link = [regex]::Match($text, 'https?://\S+').Value }
+        Move-Item -LiteralPath $from -Destination (Join-Path "$root\$To" $Job) -Force
+        if ($To -eq "Yes" -and $link) { Start-Process ($link.TrimEnd(')', '.', ',')) }
+    }
     $form.Close()
 }
 $yesButton = New-Button "Yes" 16 70 { Move-Job "Yes" }
