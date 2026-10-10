@@ -277,7 +277,8 @@ async function main() {
   }
   // Drop one rule at a time when nothing passes (10 Oct 2026, his choice). Safety rules
   // (Europe, English, nothing adult/freelance, hiring, skip lists) are never dropped.
-  const DROP_ORDER = ["ticket job", "says 16+ or younger", "active (100+ online, 5%+ of members)", "1,000+ members"];
+  // Turned off again 10 Oct 2026 (his choice): strict rules only. Was: ticket job, 16+, active, 1,000+ members.
+  const DROP_ORDER = [];
   let dropped = [];
   let {left, funnel, farmFunnel} = await applyRules(dropped);
   while (!left.length && dropped.length < DROP_ORDER.length) {
