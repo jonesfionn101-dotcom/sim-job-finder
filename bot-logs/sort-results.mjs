@@ -128,3 +128,18 @@ console.log(`Summary for Claude written to ${path.join(AI, "bot-summary.md")}`);
 // The search log (search-log.md on GitHub, pulled to this PC) as a document in Job Results.
 const LOG = new URL("../search-log.md", import.meta.url);
 if (fs.existsSync(LOG)) fs.copyFileSync(LOG, path.join(ROOT, "Search log.md"));
+
+// "Servers to join.md": one list of every server waiting in To check, with its join link (10 Oct 2026).
+const waiting = fs.readdirSync(YES).filter(f => f.endsWith(".md")).map(f => {
+  const text = fs.readFileSync(path.join(YES, f), "utf8");
+  const link = (text.match(/https:\/\/discord\.(gg|com\/invite)\/[^\s)]+/) || text.match(/https?:\/\/[^\s)]+/) || ["no link"])[0];
+  return `- ${f.replace(/\.md$/, "")}: ${link}`;
+});
+fs.writeFileSync(path.join(ROOT, "Servers to join.md"), [
+  `# Servers to join (updated ${new Date().toLocaleString("en-IE", {timeZone: "Europe/Dublin"})})`,
+  "",
+  "Every server here passed all your rules. Check #announcements first: a staff post in the last 1-2 days = active management.",
+  "",
+  ...(waiting.length ? waiting : ["Nothing yet. No server has passed every rule so far. The bots keep looking."]),
+  "",
+].join("\n"));
