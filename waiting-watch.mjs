@@ -8,12 +8,13 @@ const WAITING = [
     name: "TruckStopRadio - Discord Moderator",
     page: "https://truckstopradio.co.uk/apply",
     role: "Discord Moderator",
-    note: "Mods must be 16+ and handle tickets. No trial role. Apply as soon as it opens.",
+    note: "Mods must be 16+ and handle tickets. No trial role. Apply as soon as it opens. 10 Oct: Jordan is asking the Station Manager about his free mod-tracker bot.",
   },
 ];
 // Waiting with no public page to watch: shown so he remembers them.
 const WAITING_ON_REPLY = [
   "PlayGSL - replied in under 3 hours (passes 24h rule). No bot needed. Everyone starts as Trial Helper, 2-3 months to full Helper. They asked for his ideas to make the server active - he is replying.",
+  "TruckStopRadio - Jordan is asking the Station Manager about his mod-tracker bot offer (10 Oct). Waiting - do not chase.",
   "Golden Phoenix Express (GPE) - HR ticket open (10 Oct): offered a free trial staff tracker bot, waiting for their reply.",
   "Line of Energy VTC - Leadership ticket open (10 Oct): asked about outsider staff roles + offered the trial staff tracker bot, waiting for their reply.",
   "WASD - support ticket #157 open (10 Oct): asked about ticket staff roles + offered the tracker bot, waiting for their reply.",
