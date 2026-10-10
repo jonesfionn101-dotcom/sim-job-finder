@@ -19,6 +19,7 @@ const WAITING_ON_REPLY = [
   "WASD - support ticket #157 open (10 Oct): asked about ticket staff roles + offered the tracker bot, waiting for their reply.",
   "Arctic VTC - HR ticket open (10 Oct): asked about outsider staff roles + offered the tracker bot, waiting.",
   "TruckersHub - Event Management ticket open (10 Oct): suggested Convoy-mode events + asked about the tracker bot, waiting.",
+  "MrSealyPeeps - suggestion ticket open (10 Oct): offered the tracker bot + asked about staff roles, waiting.",
   "United Convoys - ticket answered fast (passes 24h rule). Applied via their apply channel (10 Oct); they check applications once a week.",
   "TruckersMP - Addon Team/Artist: applications closed; needs a website login. Their site blocks bots, so check truckersmp.com/recruitment yourself now and then.",
 ];
