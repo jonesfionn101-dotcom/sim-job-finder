@@ -71,7 +71,8 @@ const LOCAL = /\b(uk|u\.k\.|united kingdom|british|britain|england|scotland|wale
 const HIRING = /\b(staff applications?|staff apps|apply for staff|we('re| are) (hiring|recruiting)|hiring|recruiting (staff|mods?|moderators|helpers|developers?)|looking for (an? )?(secretar(y|ies)|(admin|staff) assistants?|note[- ]?takers?|minute[- ]?takers?|ticket (team|staff|handlers?|managers?)|staff|mods?|moderators|helpers|developers?|admins?|support( staff)?|hr( staff)?|media( team)?|event (staff|team)|recruiters?|application reviewers?|bot (devs?|developers?)|web ?(designers?|developers?))|bot developers? (wanted|needed)|(discord )?(managers?|admins?|moderators|mods|helpers) (wanted|needed)|join (our|the) (staff|team)|(staff|mod|moderator|support|hr|media|event|recruitment|helper) (team )?applications? (are )?open|applications? (are )?open)\b/i;
 // Ticket route (9 Oct 2026): servers where you open a ticket to apply or to be given a job.
 const TICKET_JOB = /\b(open (a|an) (ticket|application) to (apply|join|get (a )?(job|role|task))|apply (via|through|by|in) (a )?tickets?|tickets? (to|for) (apply|applications?|staff|jobs?|roles?))\b/i;
-const MIN_MEMBERS = 100;
+// Well-known servers only (10 Oct 2026, with the ticket-jobs focus).
+const MIN_MEMBERS = 1000;
 // Loosened 10 Oct 2026 (he gave permission, to start applying today):
 // - location: a server passes unless it says it's OUTSIDE Europe (most never say where they are);
 // - hiring: being listed under a hiring tag on a server list (e.g. "looking-for-staff") counts too.
@@ -185,7 +186,8 @@ async function main() {
       const text = raw.replace(/\\n/g, " ").replace(/\\u([0-9a-f]{4})/gi, (_, h) => String.fromCharCode(parseInt(h, 16))).replace(/\\(.)/g, "$1").replace(/\s+/g, " ").slice(0, 3000);
       // The page shows only how many are online; treat 20+ online as big enough.
       const online = Number((body.match(/onlineCount:(\d+)/) || [])[1]) || 0;
-      const members = online >= 20 ? MIN_MEMBERS : 0;
+      // About 1 in 10 members is usually online, so 100+ online means roughly 1,000+ members.
+      const members = online >= 100 ? MIN_MEMBERS : 0;
       if (name) seen.set(url, {name, url, description: text, members, group: "🎮 UK & Irish gaming", queries: [`list page ${origin}`], hiringTag: HIRING_TAG.test(page) ? page.split("/tag/")[1].split("?")[0] : null});
       await sleep(1500);
     }
