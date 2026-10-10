@@ -145,7 +145,7 @@ const waiting = [
 fs.writeFileSync(path.join(ROOT, "Servers to join.md"), [
   `# Servers to join (updated ${new Date().toLocaleString("en-IE", {timeZone: "Europe/Dublin"})})`,
   "",
-  "Every server here passed all your rules. Check #announcements first: a staff post in the last 1-2 days = active management.",
+  "The bots put each server in the right list. Check #announcements first: a staff post in the last 1-2 days = active management.",
   "",
   ...(waiting.length ? waiting : ["Nothing yet. No server has passed every rule so far. The bots keep looking."]),
   "",
