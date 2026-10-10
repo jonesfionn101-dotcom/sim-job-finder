@@ -33,7 +33,11 @@ function New-Button([string]$Text, [int]$X, [int]$Width, [scriptblock]$OnClick) 
     $button.Add_Click($OnClick)
     $button
 }
+function Open-Playlist { Start-Process "spotify:playlist:7eFSKKmYgWY0D4KxdAvnXo" }
+
 function Move-Job([string]$To) {
+    # A song for his answer too, Yes or No.
+    if ($Job) { Open-Playlist }
     $from = Join-Path "$root\To check" $Job
     if ($Job -and (Test-Path -LiteralPath $from)) {
         # Yes also opens the server's page so he can join and apply straight away.
@@ -94,8 +98,8 @@ $form.Add_Shown({
     try { (New-Object Media.SoundPlayer "C:\Windows\Media\Windows Notify Calendar.wav").PlaySync() } catch { [Media.SystemSounds]::Exclamation.Play() }
     # After the chime, say what was found.
     if ($voiceOn -and $Job) { $voice.SpeakAsync("$Title $($Body -replace 'https?://\S+', '')") | Out-Null }
-    # His alert playlist opens in Spotify (Spotify Free won't let other programs press play).
-    # Only on the first pop-up for a job, not on the 5-minute reminders.
-    if ($Job -and -not $Reminder) { Start-Process "spotify:playlist:7eFSKKmYgWY0D4KxdAvnXo" }
+    # His alert playlist opens in Spotify on every job pop-up, reminders included
+    # (Spotify Free won't let other programs press play, so he presses it).
+    if ($Job) { Open-Playlist }
 })
 [void]$form.ShowDialog()
