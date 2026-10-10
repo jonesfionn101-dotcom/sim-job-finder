@@ -9,6 +9,10 @@ param([switch]$Test)
 
 $yes = "G:\AI_Projects\Job Results\To check"
 $seenFile = "G:\AI_Projects\Job Results\AI only\yes-seen.json"
+# Off switch (10 Oct 2026): put the word "off" in "Job Results\AI only\job-popups.txt".
+# Jobs still land in "To check"; they pop up once it is switched back on.
+$switch = "G:\AI_Projects\Job Results\AI only\job-popups.txt"
+if (-not $Test -and (Test-Path -LiteralPath $switch) -and ((Get-Content -LiteralPath $switch -Raw) -match 'off')) { "job pop-ups are off"; exit 0 }
 
 # Uses popup.ps1 (our own pop-up with sound): Windows notifications don't show on this PC.
 # -Wait: one pop-up at a time, so a backlog doesn't stack on top of itself.
