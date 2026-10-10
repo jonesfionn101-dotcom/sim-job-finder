@@ -190,7 +190,7 @@ async function main() {
       const online = Number((body.match(/onlineCount:(\d+)/) || [])[1]) || 0;
       // About 1 in 10 members is usually online, so 100+ online means roughly 1,000+ members.
       const members = online >= 100 ? MIN_MEMBERS : 0;
-      if (name) seen.set(url, {name, url, description: text, members, group: "🎮 UK & Irish gaming", queries: [`list page ${origin}`], hiringTag: HIRING_TAG.test(page) ? page.split("/tag/")[1].split("?")[0] : null});
+      if (name) seen.set(url, {name, url, description: text, members, group: "🎮 UK & Irish gaming", online, queries: [`list page ${origin}`], hiringTag: HIRING_TAG.test(page) ? page.split("/tag/")[1].split("?")[0] : null});
       await sleep(1500);
     }
   }
@@ -200,7 +200,7 @@ async function main() {
       .then(r => r.ok ? r.json() : null).catch(() => null);
     if (!invite?.guild) continue;
     const url = `https://discord.gg/${code}`;
-    if (!seen.has(url)) seen.set(url, {name: invite.guild.name, url, description: invite.guild.description || "", members: invite.approximate_member_count || 0, group: "🎮 UK & Irish gaming", queries: ["Claude's starter lead"]});
+    if (!seen.has(url)) seen.set(url, {name: invite.guild.name, url, description: invite.guild.description || "", members: invite.approximate_member_count || 0, online: invite.approximate_presence_count, group: "🎮 UK & Irish gaming", queries: ["Claude's starter lead"]});
     await sleep(1500);
   }
   console.error(`${seen.size} servers from ${queryCount} searches and ${SEEDS.invites.length} starter leads (${failed} searches returned nothing)`);
@@ -223,6 +223,9 @@ async function main() {
     ["not on his skip lists", s => !TRIED.some(name => s.name.toLowerCase().includes(name)) && !(SEEDS.skip || []).some(name => s.name.toLowerCase().includes(name.toLowerCase()))],
     // He is 16 (10 Oct 2026): the public page must say an age of 16+ or lower (e.g. 13+, 16+).
     ["says 16+ or younger", s => AGE_OK.test(text(s))],
+    // Active servers answer tickets (10 Oct 2026): 100+ online AND 5%+ of members online.
+    // Discord's own directory doesn't show the online count; those say "check" instead of failing.
+    ["active (100+ online, 5%+ of members)", s => s.online === undefined || (s.online >= 100 && s.online >= s.members * 0.05)],
   ];
   let left = [...seen.values()];
   const funnel = [`${left.length} servers found`];
