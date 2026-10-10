@@ -45,7 +45,7 @@ const TOPIC_OF = {
 const WIDEN = Number(process.env.WIDEN || 0);
 const MORE_TOPICS = [
   {"🚜 Farming": ["fs22 uk", "farm sim 22"], "🚚 Trucking & transport": ["ats", "vtc", "bus simulator"], "🏎️ Other sims": ["assetto corsa", "flight sim"], "🎮 UK & Irish gaming": ["fivem uk", "minecraft uk"]},
-  {"🚜 Farming": ["farming community", "agriculture"], "🚚 Trucking & transport": ["trucking", "convoy", "train sim"], "🏎️ Other sims": ["police roleplay", "racing league"], "🎮 UK & Irish gaming": ["gta rp", "roblox uk", "gaming community", "esports"]},
+  {"🚜 Farming": ["farming community", "agriculture"], "🚚 Trucking & transport": ["trucking", "convoy", "train sim"], "🏎️ Other sims": ["police roleplay", "racing league"], "🎮 UK & Irish gaming": ["gta rp", "gaming community", "esports"]},
 ];
 for (const extra of MORE_TOPICS.slice(0, WIDEN)) {
   for (const [group, topics] of Object.entries(extra)) TOPIC_OF[group].push(...topics);
@@ -63,7 +63,7 @@ const WANTED_ROLE = /\b(staff|moderators?|mods|admins?|support|helpers?|hr|human
 export const AGE_OK = /(\b1[0-6]\s*\+|\b(ages?|aged)\s*1[0-6]\s*(\+|and (over|up|above)|or (older|over|above))|\bmin(imum)?\.?\s*age\s*(of|is|:)?\s*1[0-6]\b)/i;
 const TRIED = (process.env.TRIED_VTCS || "").split(/[\n,]/).map(n => n.trim().toLowerCase()).filter(Boolean);
 // Freelance/hire-me marketplaces are not jobs he wants (10 Oct 2026).
-const SKIP = /web3|crypto|nft|blockchain|nsfw|18\+|adult|dating|freelanc\w*|commissions?|fiverr|upwork|hire me|for hire|paid work|gigs?\b|co-?owner|help (to )?fund|investors?|brand new (discord )?server|robloxw*|just (started|opened)/i;
+const SKIP = /web3|crypto|nft|blockchain|nsfw|18\+|adult|dating|freelanc\w*|commissions?|fiverr|upwork|hire me|for hire|paid work|gigs?\b|co-?owner|help (to )?fund|investors?|brand new (discord )?server|roblox\w*|just (started|opened)/i;
 // Learned 10 Oct 2026: Lore Forged wanted Roblox devs + a paying co-owner; LIGHT was a
 // brand new chat server whose invite had expired. Those kinds are skipped now.
 // TICKET JOBS ONLY for now (10 Oct 2026): the server must say you apply or get
