@@ -60,7 +60,12 @@ for (const [group, topics] of Object.entries(TOPIC_OF)) {
 const WANTED_ROLE = /\b(staff|moderators?|mods|admins?|support|helpers?|hr|human resources|developers?|devs?|bot|web(site)?|designers?|media|events?|community managers?|managers?|team|recruit(ers?|ment)|application reviewers?|reviewers?|secretar(y|ies)|(admin|staff) assistants?|note[- ]?takers?|minute[- ]?takers?|transcri\w+|documentation|ticket (team|staff|handlers?|loggers?|managers?)|clerks?)\b/i;
 // Communities already joined (private TRIED_VTCS secret): never listed.
 const TRIED = (process.env.TRIED_VTCS || "").split(/[\n,]/).map(n => n.trim().toLowerCase()).filter(Boolean);
-const SKIP = /web3|crypto|nft|blockchain|nsfw|18\+|adult|dating/i;
+// Freelance/hire-me marketplaces are not jobs he wants (10 Oct 2026).
+const SKIP = /web3|crypto|nft|blockchain|nsfw|18\+|adult|dating|freelanc\w*|commissions?|fiverr|upwork|hire me|for hire|paid work|gigs?\b/i;
+// TICKET JOBS ONLY for now (10 Oct 2026): the server must say you apply or get
+// the job by opening a ticket. Other roles get added back later, one at a time.
+const TICKET_ONLY = process.env.TICKET_ONLY !== "0";
+const TICKET_WORD = /\btickets?\b/i;
 // Anywhere in Europe (widened from UK-only on 10 Oct 2026); English is still required.
 const LOCAL = /\b(uk|u\.k\.|united kingdom|british|britain|england|scotland|wales|ireland|irish|northern ireland|gmt|bst|europe|european|eu|euw|eune|cet|cest|eet|germany|german|france|french|netherlands|dutch|belgium|spain|spanish|portugal|italy|italian|poland|polish|sweden|swedish|norway|norwegian|denmark|danish|finland|finnish|austria|switzerland|swiss|czech|slovakia|hungary|romania|greece|croatia|baltic|nordic|scandinavia\w*)\b/i;
 const HIRING = /\b(staff applications?|staff apps|apply for staff|we('re| are) (hiring|recruiting)|hiring|recruiting (staff|mods?|moderators|helpers|developers?)|looking for (an? )?(secretar(y|ies)|(admin|staff) assistants?|note[- ]?takers?|minute[- ]?takers?|ticket (team|staff|handlers?|managers?)|staff|mods?|moderators|helpers|developers?|admins?|support( staff)?|hr( staff)?|media( team)?|event (staff|team)|recruiters?|application reviewers?|bot (devs?|developers?)|web ?(designers?|developers?))|bot developers? (wanted|needed)|(discord )?(managers?|admins?|moderators|mods|helpers) (wanted|needed)|join (our|the) (staff|team)|(staff|mod|moderator|support|hr|media|event|recruitment|helper) (team )?applications? (are )?open|applications? (are )?open)\b/i;
@@ -204,6 +209,7 @@ async function main() {
     .filter(s => s.members >= MIN_MEMBERS && GAMING.test(`${s.name} ${s.description}`) && !SKIP.test(`${s.name} ${s.description}`))
     // Strict: the description itself must advertise an open job he wants.
     .filter(s => openJob(s.description) || s.hiringTag)
+    .filter(s => !TICKET_ONLY || TICKET_JOB.test(s.description) || TICKET_WORD.test(s.description))
     .filter(s => !TRIED.some(name => s.name.toLowerCase().includes(name)))
     .map(s => {
       const text = `${s.name} ${s.description}`;
