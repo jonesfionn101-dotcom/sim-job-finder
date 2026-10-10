@@ -4,7 +4,7 @@
 #
 #   powershell -NoProfile -ExecutionPolicy Bypass -File popup.ps1 -Title "New job found!" -Body "..."
 
-param([string]$Title = "New job found!", [string]$Body = "Test: this is what an alert looks like.", [string]$Job = "")
+param([string]$Title = "New job found!", [string]$Body = "Test: this is what an alert looks like.", [string]$Job = "", [switch]$Reminder)
 # $Job = a file in "To check". Yes/No move it into his Yes or No folder (10 Oct 2026).
 $root = "G:\AI_Projects\Job Results"
 
@@ -42,6 +42,7 @@ function Move-Job([string]$To) {
         $link = [regex]::Match($text, 'https://discord\.(gg|com/invite)/\S+').Value
         if (-not $link) { $link = [regex]::Match($text, 'https?://\S+').Value }
         Move-Item -LiteralPath $from -Destination (Join-Path "$root\$To" $Job) -Force
+        $script:answered = $true
         if ($To -eq "Yes" -and $link) { Start-Process ($link.TrimEnd(')', '.', ',')) }
     }
     $form.Close()
@@ -73,7 +74,15 @@ $openButton = New-Button "Read details" 172 120 {
     if ($voice.State -eq "Speaking") { $voice.SpeakAsyncCancelAll(); return }
     $voice.SpeakAsync((Get-SpokenDetails) -join " ") | Out-Null
 }
+# "Later" (or ignoring it) brings the same job back 5 minutes later, until he answers Yes or No.
+$script:answered = $false
+function Request-Reminder {
+    if ($script:answered -or -not $Job) { return }
+    $again = "Start-Sleep 300; if (Test-Path -LiteralPath '$root\To check\$($Job -replace "'", "''")') { & '$PSCommandPath' -Title '$($Title -replace "'", "''")' -Body '$($Body -replace "'", "''")' -Job '$($Job -replace "'", "''")' -Reminder }"
+    Start-Process powershell -WindowStyle Hidden -ArgumentList @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', $again)
+}
 $laterButton = New-Button "Later" 300 80 { $form.Close() }
+$form.Add_FormClosed({ Request-Reminder })
 $form.Add_FormClosing({ $voice.SpeakAsyncCancelAll() })
 if (-not $Job) { $yesButton.Enabled = $false; $noButton.Enabled = $false; $openButton.Enabled = $false }
 $form.Controls.AddRange(@($titleLabel, $bodyLabel, $yesButton, $noButton, $openButton, $laterButton))
@@ -85,5 +94,8 @@ $form.Add_Shown({
     try { (New-Object Media.SoundPlayer "C:\Windows\Media\Windows Notify Calendar.wav").PlaySync() } catch { [Media.SystemSounds]::Exclamation.Play() }
     # After the chime, say what was found.
     if ($voiceOn -and $Job) { $voice.SpeakAsync("$Title $($Body -replace 'https?://\S+', '')") | Out-Null }
+    # His alert playlist opens in Spotify (Spotify Free won't let other programs press play).
+    # Only on the first pop-up for a job, not on the 5-minute reminders.
+    if ($Job -and -not $Reminder) { Start-Process "spotify:playlist:7eFSKKmYgWY0D4KxdAvnXo" }
 })
 [void]$form.ShowDialog()
