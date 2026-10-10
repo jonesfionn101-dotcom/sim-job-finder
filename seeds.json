@@ -369,14 +369,7 @@
       "support team hiring",
       "ticket support team",
       "helpers wanted tickets",
-      "support staff applications open",
-      "central london roleplay",
-      "uk roleplay community",
-      "er:lc uk",
-      "british roleplay server",
-      "uk fivem roleplay",
-      "policing london",
-      "london roleplay staff"
+      "support staff applications open"
     ],
     "invites": [
       "GPGxNVyRmM",
@@ -510,5 +503,12 @@
   "lesson": "9 Oct 2026: Prime Logistics (and most VTCs) only give staff roles to their own drivers. Look for servers whose staff roles do NOT need you to be a driver/member first.",
   "farmingGoal": "9 Oct 2026: FS22 ONLY for now. Well-known FS22 communities where he can start as staff without being a member first and work up to management or HR.",
   "europeStart": "10 Oct 2026: Claude's starter search for English-speaking European servers hiring staff (24 Discodus categories, 3 pages each for the big ones). Goal: 100 possible jobs a day.",
-  "targetRole": "10 Oct 2026: his target role is SUPPORT TEAM / TICKET SUPPORT - answering tickets and keeping ticket notes; a step towards HR/management."
+  "targetRole": "10 Oct 2026: his target role is SUPPORT TEAM / TICKET SUPPORT - answering tickets and keeping ticket notes; a step towards HR/management.",
+  "skip": [
+    "Central London Westminster Roleplay",
+    "Central London Roleplay",
+    "Greater London Roleplay",
+    "UK City of London",
+    "Policing London"
+  ]
 }

@@ -96,7 +96,7 @@ jobs:
         with:
           node-version: 22
       - name: Tests (each role, English check, CLA rule)
-        run: node --test tests/roles.test.mjs tests/english.test.mjs tests/cla.test.mjs tests/no-broken-characters.test.mjs
+        run: node --test tests/roles.test.mjs tests/english.test.mjs tests/cla.test.mjs tests/no-broken-characters.test.mjs tests/age.test.mjs
       - name: Search a quarter of the communities
         timeout-minutes: 30
         env:

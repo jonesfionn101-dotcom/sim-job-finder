@@ -59,6 +59,8 @@ for (const [group, topics] of Object.entries(TOPIC_OF)) {
 // The kinds of job he wants (all server-side, no gameplay needed).
 const WANTED_ROLE = /\b(staff|moderators?|mods|admins?|support|helpers?|hr|human resources|developers?|devs?|bot|web(site)?|designers?|media|events?|community managers?|managers?|team|recruit(ers?|ment)|application reviewers?|reviewers?|secretar(y|ies)|(admin|staff) assistants?|note[- ]?takers?|minute[- ]?takers?|transcri\w+|documentation|ticket (team|staff|handlers?|loggers?|managers?)|clerks?)\b/i;
 // Communities already joined (private TRIED_VTCS secret): never listed.
+// "13+", "16+", "ages 14 and up", "aged 16 or older", "minimum age 15"... anything 16 or under.
+export const AGE_OK = /(\b1[0-6]\s*\+|\b(ages?|aged)\s*1[0-6]\s*(\+|and (over|up|above)|or (older|over|above))|\bmin(imum)?\.?\s*age\s*(of|is|:)?\s*1[0-6]\b)/i;
 const TRIED = (process.env.TRIED_VTCS || "").split(/[\n,]/).map(n => n.trim().toLowerCase()).filter(Boolean);
 // Freelance/hire-me marketplaces are not jobs he wants (10 Oct 2026).
 const SKIP = /web3|crypto|nft|blockchain|nsfw|18\+|adult|dating|freelanc\w*|commissions?|fiverr|upwork|hire me|for hire|paid work|gigs?\b/i;
@@ -213,6 +215,10 @@ async function main() {
     .filter(s => openJob(s.description) || s.hiringTag)
     .filter(s => !TICKET_ONLY || TICKET_JOB.test(s.description) || TICKET_WORD.test(s.description))
     .filter(s => !TRIED.some(name => s.name.toLowerCase().includes(name)))
+    // Servers he has said no to (seeds.json skip list).
+    .filter(s => !(SEEDS.skip || []).some(name => s.name.toLowerCase().includes(name.toLowerCase())))
+    // He is 16 (10 Oct 2026): the public page must say an age of 16+ or lower (e.g. 13+, 16+).
+    .filter(s => AGE_OK.test(`${s.name} ${s.description}`))
     .map(s => {
       const text = `${s.name} ${s.description}`;
       const local = (text.match(LOCAL) || [])[0];
