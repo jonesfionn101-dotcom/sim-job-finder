@@ -171,4 +171,9 @@ jobs:
       - name: Start the next search
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh workflow run rules-search.yml --repo "$GITHUB_REPOSITORY"
+        # GitHub skips timed runs when it's busy (the finders went 4+ hours without
+        # running on 10 Oct), so this chain starts them too.
+        run: |
+          gh workflow run rules-search.yml --repo "$GITHUB_REPOSITORY"
+          gh workflow run find-jobs.yml --repo "$GITHUB_REPOSITORY" || true
+          gh workflow run find-vtcs.yml --repo "$GITHUB_REPOSITORY" || true
