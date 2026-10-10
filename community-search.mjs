@@ -207,18 +207,38 @@ async function main() {
 
   if (process.env.COLLECT_ONLY) { fs.writeFileSync(process.env.COLLECT_ONLY, JSON.stringify([...seen.values()])); return; }
 
-  const scored = [...seen.values()]
-    // English-speaking UK/Irish servers only (9 Oct 2026).
-    .filter(s => (process.env.WORLDWIDE || LOCAL.test(`${s.name} ${s.description}`) || !OUTSIDE_EUROPE.test(`${s.name} ${s.description}`)) && english(s.description)) // WORLDWIDE=1: test run without the UK rule
-    .filter(s => s.members >= MIN_MEMBERS && GAMING.test(`${s.name} ${s.description}`) && !SKIP.test(`${s.name} ${s.description}`))
+  // One search, then one limit at a time (10 Oct 2026): each rule is applied in turn
+  // and the number left after it is reported, so he can see where servers drop off.
+  const text = s => `${s.name} ${s.description}`;
+  const RULES = [
+    // WORLDWIDE=1: test run without the location rule.
+    ["not outside Europe", s => process.env.WORLDWIDE || LOCAL.test(text(s)) || !OUTSIDE_EUROPE.test(text(s))],
+    ["English", s => english(s.description)],
+    ["1,000+ members", s => s.members >= MIN_MEMBERS],
+    ["games or sims, nothing adult/freelance", s => GAMING.test(text(s)) && !SKIP.test(text(s))],
     // Strict: the description itself must advertise an open job he wants.
-    .filter(s => openJob(s.description) || s.hiringTag)
-    .filter(s => !TICKET_ONLY || TICKET_JOB.test(s.description) || TICKET_WORD.test(s.description))
-    .filter(s => !TRIED.some(name => s.name.toLowerCase().includes(name)))
-    // Servers he has said no to (seeds.json skip list).
-    .filter(s => !(SEEDS.skip || []).some(name => s.name.toLowerCase().includes(name.toLowerCase())))
+    ["hiring a role he wants", s => openJob(s.description) || s.hiringTag],
+    ["ticket job", s => !TICKET_ONLY || TICKET_JOB.test(s.description) || TICKET_WORD.test(s.description)],
+    // Already tried, and servers he has said no to (seeds.json skip list).
+    ["not on his skip lists", s => !TRIED.some(name => s.name.toLowerCase().includes(name)) && !(SEEDS.skip || []).some(name => s.name.toLowerCase().includes(name.toLowerCase()))],
     // He is 16 (10 Oct 2026): the public page must say an age of 16+ or lower (e.g. 13+, 16+).
-    .filter(s => AGE_OK.test(`${s.name} ${s.description}`))
+    ["says 16+ or younger", s => AGE_OK.test(text(s))],
+  ];
+  let left = [...seen.values()];
+  const funnel = [`${left.length} servers found`];
+  // The farming search (10 Oct 2026): the same rules, counted for farming servers on their own.
+  const FARMING = GROUP_OF[0][1];
+  let farm = left.filter(s => FARMING.test(text(s)));
+  const farmFunnel = [`${farm.length} farming servers found`];
+  for (const [label, keep] of RULES) {
+    left = left.filter(keep);
+    funnel.push(`${label}: ${left.length}`);
+    farm = farm.filter(keep);
+    farmFunnel.push(`${label}: ${farm.length}`);
+  }
+  console.error(`Funnel: ${funnel.join(" → ")}`);
+  console.error(`Farming: ${farmFunnel.join(" → ")}`);
+  const scored = left
     .map(s => {
       const text = `${s.name} ${s.description}`;
       const local = (text.match(LOCAL) || [])[0];
@@ -231,6 +251,10 @@ async function main() {
   const hiringCount = scored.filter(s => s.hiring).length;
   const out = [
     `Strict community job search ${today}. Only servers whose own description advertises an open job are listed: ${scored.length} found.`,
+    "",
+    `Rule by rule: ${funnel.join(" → ")}`,
+    "",
+    `Farming servers: ${farmFunnel.join(" → ")}`,
     "",
   ];
   for (const group of Object.keys(QUERIES)) {
