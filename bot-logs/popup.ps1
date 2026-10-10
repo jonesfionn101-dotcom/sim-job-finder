@@ -1,4 +1,4 @@
-# A small always-on-top pop-up at the bottom-right of the main screen, with a
+﻿# A small always-on-top pop-up at the bottom-right of the main screen, with a
 # sound. Used instead of Windows notifications, which didn't show on this PC.
 # Closes itself after 20 seconds, or when clicked. "Open" opens the Yes folder.
 #
@@ -40,9 +40,33 @@ function Move-Job([string]$To) {
 }
 $yesButton = New-Button "Yes" 16 70 { Move-Job "Yes" }
 $noButton = New-Button "No" 94 70 { Move-Job "No" }
-# Reading the details shouldn't cost him the answer: stay up until he picks Yes, No or Later.
-$openButton = New-Button "Open details" 172 120 { Start-Process notepad.exe (Join-Path "$root\To check" $Job); $timer.Stop() }
+# Voice for JOB ALERTS ONLY (he asked, 10 Oct 2026). Nothing else on the PC talks.
+# Off switch: put the word "off" in "Job Results\AI only\alert-voice.txt".
+Add-Type -AssemblyName System.Speech
+$voice = New-Object System.Speech.Synthesis.SpeechSynthesizer
+$voiceFile = "$root\AI only\alert-voice.txt"
+$voiceOn = -not ((Test-Path -LiteralPath $voiceFile) -and ((Get-Content -LiteralPath $voiceFile -Raw) -match 'off'))
+
+# The job file as plain spoken sentences: no markdown, no links.
+function Get-SpokenDetails {
+    $file = Join-Path "$root\To check" $Job
+    if (-not (Test-Path -LiteralPath $file)) { return "I can't find the details for this job." }
+    (Get-Content -LiteralPath $file) |
+        Where-Object { $_ -notmatch '^\s*$' -and $_ -notmatch '^(From:|🆕)' -and $_ -notmatch '^- (Open|Check inside):' } |
+        ForEach-Object { ($_ -replace 'https?://\S+', '' -replace '[#*`>_]', '' -replace '^\s*-\s*', '' -replace '\s+', ' ').Trim() } |
+        Where-Object { $_ } |
+        ForEach-Object { if ($_ -match '[.!?]$') { $_ } else { "$_." } }
+}
+
+# "Read details" reads the job out loud (no Notepad); click again to stop.
+# Reading it keeps the pop-up open until he picks Yes, No or Later.
+$openButton = New-Button "Read details" 172 120 {
+    $timer.Stop()
+    if ($voice.State -eq "Speaking") { $voice.SpeakAsyncCancelAll(); return }
+    $voice.SpeakAsync((Get-SpokenDetails) -join " ") | Out-Null
+}
 $laterButton = New-Button "Later" 300 80 { $form.Close() }
+$form.Add_FormClosing({ $voice.SpeakAsyncCancelAll() })
 if (-not $Job) { $yesButton.Enabled = $false; $noButton.Enabled = $false; $openButton.Enabled = $false }
 $form.Controls.AddRange(@($titleLabel, $bodyLabel, $yesButton, $noButton, $openButton, $laterButton))
 
@@ -50,6 +74,8 @@ $form.Controls.AddRange(@($titleLabel, $bodyLabel, $yesButton, $noButton, $openB
 $timer = New-Object Windows.Forms.Timer; $timer.Interval = 60000; $timer.Add_Tick({ $form.Close() }); $timer.Start()
 $form.Add_Shown({
     $form.Activate()
-    try { (New-Object Media.SoundPlayer "C:\Windows\Media\Windows Notify Calendar.wav").Play() } catch { [Media.SystemSounds]::Exclamation.Play() }
+    try { (New-Object Media.SoundPlayer "C:\Windows\Media\Windows Notify Calendar.wav").PlaySync() } catch { [Media.SystemSounds]::Exclamation.Play() }
+    # After the chime, say what was found.
+    if ($voiceOn -and $Job) { $voice.SpeakAsync("$Title $($Body -replace 'https?://\S+', '')") | Out-Null }
 })
 [void]$form.ShowDialog()
