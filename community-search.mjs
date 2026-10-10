@@ -154,7 +154,9 @@ async function main() {
   // Deep dive (9 Oct 2026): Claude finds web pages that LIST servers; the bot reads
   // every invite on them and checks each server itself.
   const listed = [];
-  for (const page of SHARD === 0 && !process.env.MERGE ? SEEDS.listPages || [] : []) {
+  // Each of the computers takes its share of list pages and starter servers (shard 0 alone timed out).
+  const mine = (_, i) => i % SHARDS === SHARD;
+  for (const page of !process.env.MERGE ? (SEEDS.listPages || []).filter(mine) : []) {
     const html = await fetch(page, {signal: AbortSignal.timeout(20000), headers: {"user-agent": "curl/8.0"}}).then(r => r.ok ? r.text() : "").catch(() => "");
     listed.push(...[...html.matchAll(/discord(?:\.gg|(?:app)?\.com\/invite)\/([A-Za-z0-9-]+)/g)].map(m => m[1]));
     // List sites with their own server pages (e.g. Discodus /server/<id>): read each page's
@@ -172,7 +174,7 @@ async function main() {
     }
   }
   if (listed.length) console.error(`${new Set(listed).size} servers read from ${SEEDS.listPages.length} list pages`);
-  for (const code of SHARD === 0 && !process.env.MERGE ? [...new Set([...SEEDS.invites, ...listed])] : []) {
+  for (const code of !process.env.MERGE ? [...new Set([...SEEDS.invites.filter(mine), ...listed])] : []) {
     const invite = await fetch(`https://discord.com/api/v10/invites/${code}?with_counts=true`, {signal: AbortSignal.timeout(20000), headers: {"user-agent": "curl/8.0"}})
       .then(r => r.ok ? r.json() : null).catch(() => null);
     if (!invite?.guild) continue;
