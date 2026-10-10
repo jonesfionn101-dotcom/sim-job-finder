@@ -94,7 +94,8 @@ async function main() {
     const help = (await gh(`repos/${name}/issues?state=open&labels=help%20wanted&per_page=10`)) || [];
     let open = [...issues, ...help].filter((i, n, all) => !i.pull_request && !i.assignee && all.findIndex(x => x.id === i.id) === n);
     // Truck-sim projects rarely label issues: accept any unassigned issue from the last 60 days.
-    if (!open.length && TRUCK.test(`${name} ${repo.description} ${(repo.topics || []).join(" ")}`)) {
+    // Loosened 10 Oct 2026: any project (not just truck-sim ones) may offer an unassigned issue from the last 60 days.
+    if (!open.length) {
       const recent = new Date(Date.now() - 60 * 86400000).toISOString();
       open = ((await gh(`repos/${name}/issues?state=open&since=${recent}&per_page=10`)) || [])
         .filter(i => !i.pull_request && !i.assignee && i.created_at >= recent);

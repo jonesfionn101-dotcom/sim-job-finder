@@ -67,6 +67,11 @@ const HIRING = /\b(staff applications?|staff apps|apply for staff|we('re| are) (
 // Ticket route (9 Oct 2026): servers where you open a ticket to apply or to be given a job.
 const TICKET_JOB = /\b(open (a|an) (ticket|application) to (apply|join|get (a )?(job|role|task))|apply (via|through|by|in) (a )?tickets?|tickets? (to|for) (apply|applications?|staff|jobs?|roles?))\b/i;
 const MIN_MEMBERS = 100;
+// Loosened 10 Oct 2026 (he gave permission, to start applying today):
+// - location: a server passes unless it says it's OUTSIDE Europe (most never say where they are);
+// - hiring: being listed under a hiring tag on a server list (e.g. "looking-for-staff") counts too.
+const OUTSIDE_EUROPE = /\b(usa|u\.s\.a?|united states|america|american|canada|canadian|na server|north america|latam|mexico|brazil|brasil|india|indian|pakistan|bangladesh|philippines|pinoy|indonesia|malaysia|singapore|asia|asian|sea server|oce|australia|aussie|new zealand|africa|nigeria|egypt|arab|middle east|china|chinese|japan|korea)\b/i;
+const HIRING_TAG = /\/tag\/(looking-for-staff|hiring-staff|staff-applications?|staff-wanted|mod-applications|helpers|recruiting-staff|hiring-mods|applications-open)\b/;
 const PARALLEL = 2;
 const SHARD = Number(process.env.SHARD || 0);
 const SHARDS = Number(process.env.SHARDS || 1);
@@ -77,8 +82,8 @@ export function english(text) {
   return words.length > 0 && common >= Math.min(3, words.length) * 0.6 && common / words.length >= 0.15;
 }
 const ENGLISH_WORDS = new Set("the and for our with you your to of is are a an we in on join community server friendly staff looking all be can this that it from by or as at come play games gaming new welcome".split(" "));
-const SHORTLIST = 20;
-const PER_GROUP = 5;
+const SHORTLIST = 100;
+const PER_GROUP = 25;
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -176,7 +181,7 @@ async function main() {
       // The page shows only how many are online; treat 20+ online as big enough.
       const online = Number((body.match(/onlineCount:(\d+)/) || [])[1]) || 0;
       const members = online >= 20 ? MIN_MEMBERS : 0;
-      if (name) seen.set(url, {name, url, description: text, members, group: "🎮 UK & Irish gaming", queries: [`list page ${origin}`]});
+      if (name) seen.set(url, {name, url, description: text, members, group: "🎮 UK & Irish gaming", queries: [`list page ${origin}`], hiringTag: HIRING_TAG.test(page) ? page.split("/tag/")[1].split("?")[0] : null});
       await sleep(1500);
     }
   }
@@ -195,15 +200,15 @@ async function main() {
 
   const scored = [...seen.values()]
     // English-speaking UK/Irish servers only (9 Oct 2026).
-    .filter(s => (process.env.WORLDWIDE || LOCAL.test(`${s.name} ${s.description}`)) && english(s.description)) // WORLDWIDE=1: test run without the UK rule
+    .filter(s => (process.env.WORLDWIDE || LOCAL.test(`${s.name} ${s.description}`) || !OUTSIDE_EUROPE.test(`${s.name} ${s.description}`)) && english(s.description)) // WORLDWIDE=1: test run without the UK rule
     .filter(s => s.members >= MIN_MEMBERS && GAMING.test(`${s.name} ${s.description}`) && !SKIP.test(`${s.name} ${s.description}`))
     // Strict: the description itself must advertise an open job he wants.
-    .filter(s => openJob(s.description))
+    .filter(s => openJob(s.description) || s.hiringTag)
     .filter(s => !TRIED.some(name => s.name.toLowerCase().includes(name)))
     .map(s => {
       const text = `${s.name} ${s.description}`;
       const local = (text.match(LOCAL) || [])[0];
-      const hiring = (text.match(HIRING) || [])[0];
+      const hiring = (text.match(HIRING) || [])[0] || (s.hiringTag && `listed under "${s.hiringTag}"`);
       return {...s, local, hiring, group: groupFor(text), score: (hiring ? 100 : 0) + (local ? 50 : 0) + Math.log10(s.members) * 5};
     })
     .sort((a, b) => b.score - a.score);
