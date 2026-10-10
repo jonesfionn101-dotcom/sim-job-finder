@@ -16,6 +16,7 @@ const WAITING_ON_REPLY = [
   "PlayGSL - Helpers (16+, by ticket): his ticket is open, waiting for their reply.",
   "Golden Phoenix Express (GPE) - HR ticket open (10 Oct): offered a free trial staff tracker bot, waiting for their reply.",
   "Line of Energy VTC - Leadership ticket open (10 Oct): asked about outsider staff roles + offered the trial staff tracker bot, waiting for their reply.",
+  "Save-edit server (where the TrucklineMP complaint was) - HR ticket open (10 Oct): offered the trial staff tracker bot, waiting for their reply.",
   "TruckersMP - Addon Team/Artist: applications closed; needs a website login. Their site blocks bots, so check truckersmp.com/recruitment yourself now and then.",
 ];
 
