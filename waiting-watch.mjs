@@ -21,7 +21,7 @@ const WAITING_ON_REPLY = [
   "Arctic VTC - HR ticket open (10 Oct): asked about outsider staff roles + offered the tracker bot, waiting.",
   "TruckersHub - Event Management ticket open (10 Oct): suggested Convoy-mode events + asked about the tracker bot, waiting.",
   "MrSealyPeeps - suggestion ticket open (10 Oct): offered the tracker bot + asked about staff roles, waiting.",
-  "A.P. 101 Gaming - no rules or ticket channel; asked in general chat how to contact staff (10 Oct). Waiting.",
+  "A.P. 101 Gaming - asked in general chat how to contact staff (10 Oct). venda13 [ABOO] offered to help at 3:32 PM - check if staff.",
   "FSC (Farming Simulator Community) - setup bot broken; he reported it in chat and offered to help fix it (10 Oct). Waiting.",
   "Global Cargo VTC - HR ticket open (10 Oct, 3:22 PM), message sent in English AND Dutch: asked about non-driver staff roles + offered the tracker bot. Waiting (management says replies can be slow).",
   "BritishAce Community Server - asked in general chat how to open a ticket (10 Oct); idea: tier-tracker bot for their 3-tier system. Waiting.",
