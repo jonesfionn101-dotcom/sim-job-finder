@@ -94,7 +94,8 @@ async function recruitingIds() {
 const speaksEnglish = vtc =>
   (vtc.languages || [vtc.language]).some(l => (l || "").toLowerCase().includes("english"));
 
-const UK = /\b(uk|u\.k\.|united kingdom|british|britain|england|scotland|scottish|wales|welsh|ireland|irish|gmt|bst)\b/i;
+// Anywhere in Europe (widened from UK-only on 10 Oct 2026); English is still required.
+const UK = /\b(uk|u\.k\.|united kingdom|british|britain|england|scotland|scottish|wales|welsh|ireland|irish|gmt|bst|europe|european|eu|cet|cest|eet|germany|german|france|french|netherlands|dutch|belgium|spain|portugal|italy|poland|polish|sweden|norway|denmark|finland|austria|switzerland|czech|slovakia|hungary|romania|greece|croatia|baltic|nordic|scandinavia\w*)\b/i;
 
 function reject(vtc) {
   if (vtc.recruitment !== "Open") return "recruitment closed again";
@@ -103,7 +104,7 @@ function reject(vtc) {
   if (vtc.members_count < MIN_MEMBERS) return `only ${vtc.members_count} members`;
   if (!vtc.verified && vtc.members_count < WELL_KNOWN_MEMBERS) return "not well-known (unverified, under " + WELL_KNOWN_MEMBERS + " members)";
   // Rules 2, 7 and 14 (checked 9 Oct 2026): UK-based, has a website, has a Discord.
-  if (!process.env.WORLDWIDE && !UK.test(`${vtc.name} ${vtc.slogan || ""} ${vtc.information || ""}`) && !/\.uk(\/|$)/i.test(vtc.website || "")) return "not UK-based";
+  if (!process.env.WORLDWIDE && !UK.test(`${vtc.name} ${vtc.slogan || ""} ${vtc.information || ""}`) && !/\.(uk|ie|eu|de|nl|fr|be|es|pt|it|pl|se|no|dk|fi|at|ch|cz)(\/|$)/i.test(vtc.website || "")) return "not based in Europe";
   if (!vtc.website) return "no website";
   if (!vtc.socials?.discord) return "no Discord";
   return null;
