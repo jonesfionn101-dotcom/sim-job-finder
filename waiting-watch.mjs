@@ -49,6 +49,6 @@ for (const w of WAITING) {
     out.push("");
   } else closed.push(`- ${w.name}: ${status}`);
 }
-out.push("## ⏳ Still waiting", "", "His rule: staff must reply within 24 hours of a ticket. No reply by then = move it to No.", "", ...closed, ...WAITING_ON_REPLY.map(l => `- ${l}`), "");
+out.push("## ⏳ Still waiting", "", "His rule (changed 10 Oct): the 24-hour clock starts when the person who decides (e.g. a manager) first replies to him - not when he sends his first message.", "", ...closed, ...WAITING_ON_REPLY.map(l => `- ${l}`), "");
 fs.writeFileSync("body.md", out.join("\n"));
 console.log(open);
