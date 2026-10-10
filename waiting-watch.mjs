@@ -17,7 +17,7 @@ const WAITING_ON_REPLY = [
   "Golden Phoenix Express (GPE) - HR ticket open (10 Oct): offered a free trial staff tracker bot, waiting for their reply.",
   "Line of Energy VTC - Leadership ticket open (10 Oct): asked about outsider staff roles + offered the trial staff tracker bot, waiting for their reply.",
   "WASD - support ticket #157 open (10 Oct): asked about ticket staff roles + offered the tracker bot, waiting for their reply.",
-  "United Convoys - General Support ticket (10 Oct): asked about staff roles + offered the tracker bot, waiting. They also have an Apply Today button - check it.",
+  "United Convoys - ticket answered fast (passes 24h rule). Applied via their apply channel (10 Oct); they check applications once a week.",
   "TruckersMP - Addon Team/Artist: applications closed; needs a website login. Their site blocks bots, so check truckersmp.com/recruitment yourself now and then.",
 ];
 
