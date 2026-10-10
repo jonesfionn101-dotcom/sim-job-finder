@@ -30,3 +30,4 @@ Every automatic search: when it ran (Irish time), how it ended, and what it foun
 | 10 Oct 2026 09:51 | 09:52 | Find recruiting VTCs | success | VTC shortlist: 0 recruiting (updated 10 Oct 09:52) |
 | 10 Oct 2026 09:57 | 09:59 | Rules job search | cancelled | Community search: 4 hiring (updated 10 Oct 09:58);App project search: 2 found (updated 10 Oct 09:45);UK VTC search: 0 found, 10+ staff (updated 09 Oct 16:37) |
 | 10 Oct 2026 10:02 | 10:02 | Work on bot-tasks | success | - |
+| 10 Oct 2026 10:02 | 10:03 | Rules job search | cancelled | Community search: 4 hiring (updated 10 Oct 09:58);App project search: 2 found (updated 10 Oct 09:45);UK VTC search: 0 found, 10+ staff (updated 09 Oct 16:37) |
