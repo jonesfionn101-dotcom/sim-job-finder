@@ -8,9 +8,9 @@ issue=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "\"📋 
 if [ -n "$issue" ]; then
   gh issue edit "$issue" --repo "$GITHUB_REPOSITORY" --title "$title" --body-file "$body"
 else
-  gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" --body-file "$body"
+  # Search can't see a brand-new issue yet, so take its number from the link gh prints.
+  issue=$(gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" --body-file "$body" | grep -o '[0-9]*$')
 fi
 # Keep every result, not just the newest: each run is also saved as a comment.
 # archive.yml moves these comments into findings-archive.md three times a day.
-issue=${issue:-$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "\"📋 $name:\" in:title" --json number -q '.[0].number')}
-gh issue comment "$issue" --repo "$GITHUB_REPOSITORY" --body-file "$body" >/dev/null
+[ -n "$issue" ] && gh issue comment "$issue" --repo "$GITHUB_REPOSITORY" --body-file "$body" >/dev/null || true
