@@ -41,13 +41,24 @@ export async function outsiderJobPosts(vtcId, news, internalOut = []) {
     if (!role) continue;
     // Internal-only roles go on the NO list instead of vanishing.
     if (INTERNAL.test(full)) { internalOut.push({title: item.title, role: role[0], at, url: `https://truckersmp.com/vtc/${vtcId}/news/${item.id}`}); continue; }
-    posts.push({title: item.title, role: role[0], at, url: `https://truckersmp.com/vtc/${vtcId}/news/${item.id}`, outsiders: EXTERNAL.test(full)});
+    posts.push({
+      title: item.title, role: role[0], at, url: `https://truckersmp.com/vtc/${vtcId}/news/${item.id}`, outsiders: EXTERNAL.test(full),
+      // The key facts he needs (10 Oct 2026): who posted it, any closing date, and whether it's by ticket.
+      author: item.author || null,
+      deadline: (full.match(DEADLINE) || [])[0] || null,
+      ticket: /\bticket\b/i.test(full),
+    });
   }
   return posts.sort((a, b) => b.at - a.at);
 }
+const DEADLINE = /\b(clos(e|es|ing)|deadline|until|ends?|by)\b[^.\n]{0,12}\b(\d{1,2}(st|nd|rd|th)?\s+\w{3,9}|\w{3,9}\s+\d{1,2}(st|nd|rd|th)?|\d{1,2}[/.-]\d{1,2}([/.-]\d{2,4})?)\b/i;
 
 export function jobPostLine(post) {
   const date = new Date(post.at).toISOString().slice(0, 10);
   const days = Math.round((Date.now() - post.at) / 86400000);
-  return `📢 Staff job: "${post.title}" (${post.role}) ${post.outsiders ? "✅ says outsiders can apply" : "❓ doesn't say if outsiders can apply, ask first"}, posted ${date} (${days} days ago): ${post.url}`;
+  return `📢 Staff job: "${post.title}" (${post.role}) ${post.outsiders ? "✅ says outsiders can apply" : "❓ doesn't say if outsiders can apply, ask first"}, posted ${date} (${days} days ago): ${post.url}` +
+    `\n  - Posted: ${date} (${days} days ago)` +
+    `\n  - How long you have: ${post.deadline ? `says "${post.deadline}"` : "no closing date given - apply soon"}` +
+    `\n  - Who to talk to: ${post.author ? `${post.author} (posted the job)` : "their recruitment/HR team"}` +
+    `\n  - Ticket job: ${post.ticket ? "yes - the post mentions a ticket" : "not stated - ask how to apply"}`;
 }

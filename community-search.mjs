@@ -222,6 +222,11 @@ async function main() {
       out.push(`- Open: ${s.url} (${s.members.toLocaleString("en-GB")} members, listing read ${today})`);
       out.push(`- ${s.description.replace(/\s+/g, " ").slice(0, 200) || "(no description)"}`);
       out.push(`- 🟢 Open job: their description says "${s.hiring}" (read ${today}; Discord doesn't show when it was written)`);
+      // Key facts (10 Oct 2026): what he needs before deciding yes or no.
+      out.push(`  - Posted: not shown by Discord (seen open on ${today})`);
+      out.push(`  - How long you have: no closing date given - apply soon`);
+      out.push(`  - Who to talk to: their staff or HR team${TICKET_JOB.test(s.description) ? " - by opening a ticket" : ""}`);
+      out.push(`  - Ticket job: ${TICKET_JOB.test(s.description) || /\bticket\b/i.test(s.description) ? "yes - their description mentions a ticket" : "not stated - check their apply/ticket channel"}`);
       out.push(`- ${s.local ? `Looks UK/Irish ("${s.local}")` : "Country not stated"} · found by: ${s.queries.slice(0, 3).join(", ")}`);
       out.push(`- Check inside: voice channels, ticket applications, age rule, button-only verification${group === "🚜 Farming" ? ", and ask if they need anything built (bot, website, Discord setup) — no gameplay needed" : ""}`);
       out.push("");
