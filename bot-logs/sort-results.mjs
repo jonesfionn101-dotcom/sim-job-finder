@@ -21,6 +21,9 @@ const NO = path.join(ROOT, "Ruled out by bots");
 const HIS_YES = path.join(ROOT, "Yes");
 const HIS_NO = path.join(ROOT, "No");
 [YES, NO, HIS_YES, HIS_NO].forEach(dir => fs.mkdirSync(dir, {recursive: true}));
+// Searches that can produce ticket jobs. Others (code jobs, app projects) are
+// ruled out while the focus is ticket jobs; add them back here when he asks.
+const TICKET_SEARCHES = /^(Community search|VTC shortlist|UK VTC search)$/;
 const decided = file => fs.existsSync(path.join(HIS_YES, file)) || fs.existsSync(path.join(HIS_NO, file));
 
 // Plain filenames only: brackets, # and dashes like "—" made files impossible to move.
@@ -37,6 +40,12 @@ for (const {title, body} of issues) {
   for (const section of main.split(/^### /m).slice(1)) {
     const name = safe(section.split("\n")[0].replace(/^\d+\.\s*/, ""));
     if (decided(`${search} - ${name}.md`)) continue; // he has already answered this one
+    // Ticket jobs only (10 Oct 2026): code and app projects never reach "To check" for now.
+    if (!TICKET_SEARCHES.test(search)) {
+      fs.writeFileSync(path.join(NO, `${search} - ${name}.md`), `# ❌ ${name}\nFrom: ${search}\n\nWhy not: not a ticket job (ticket jobs only for now)\n`);
+      no++;
+      continue;
+    }
     fs.rmSync(path.join(NO, `${search} - ${name}.md`), {force: true}); // moved: no longer a no
     fs.writeFileSync(path.join(YES, `${search} - ${name}.md`), `# ✅ ${name}\n${fresh}From: ${search} (${title.match(/\(updated [^)]+\)/)?.[0] || ""})\n\n${section.split("\n").slice(1).join("\n").trim()}\n`);
     yes++;
@@ -57,7 +66,8 @@ console.log(`Sorted ${yes} into Yes and ${no} into No (${ROOT})`);
 // fails moves to No with the reason. Entries from Claude's notes are left alone.
 const CHECKS = [
   [/^VTC shortlist|^UK VTC search/, text => /📢 (Staff job|Job post): "/.test(text) && !/none public/.test(text), "no staff job open to outsiders"],
-  [/^Community search/, text => /🟢 Open job/.test(text), "no open job in the server's description"],
+  // Ticket jobs only (10 Oct 2026): results from older rule sets must say it's a ticket job.
+  [/^Community search/, text => /🟢 Open job/.test(text) && /Ticket job: yes/.test(text), "not a ticket job, or no open job in the server's description"],
   [/^Job shortlist|^App project search/, text => {
     const dates = [...text.matchAll(/[Oo]pened (\d{4}-\d{2}-\d{2})/g)].map(m => Date.parse(m[1]));
     return dates.some(d => Date.now() - d <= 180 * 86400000) && !/plan before any code|could not check/.test(text);
