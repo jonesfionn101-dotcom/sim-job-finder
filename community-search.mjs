@@ -167,8 +167,14 @@ async function main() {
       if (seen.has(url)) continue;
       const body = await fetch(url, {signal: AbortSignal.timeout(20000), headers: {"user-agent": "curl/8.0"}}).then(r => r.ok ? r.text() : "").catch(() => "");
       const name = (body.match(/<meta property="og:title" content="([^"]+)/) || [])[1]?.replace(/ Discord Server$/, "");
-      const text = body.replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>/g, " ").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").slice(0, 3000);
-      const members = Number((text.match(/([\d,]+)\s+members/i) || [])[1]?.replace(/,/g, "")) || MIN_MEMBERS;
+      // Only the server's OWN description counts. The page around it has the site's
+      // menus and tags ("hiring" etc.), which made false matches (10 Oct 2026).
+      const raw = (body.match(/serverData:\{[\s\S]*?description:"((?:[^"\\]|\\.)*)"/) || [])[1];
+      if (!raw) { await sleep(1500); continue; }
+      const text = raw.replace(/\\n/g, " ").replace(/\\u([0-9a-f]{4})/gi, (_, h) => String.fromCharCode(parseInt(h, 16))).replace(/\\(.)/g, "$1").replace(/\s+/g, " ").slice(0, 3000);
+      // The page shows only how many are online; treat 20+ online as big enough.
+      const online = Number((body.match(/onlineCount:(\d+)/) || [])[1]) || 0;
+      const members = online >= 20 ? MIN_MEMBERS : 0;
       if (name) seen.set(url, {name, url, description: text, members, group: "🎮 UK & Irish gaming", queries: [`list page ${origin}`]});
       await sleep(1500);
     }
