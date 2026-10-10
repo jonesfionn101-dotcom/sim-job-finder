@@ -12,7 +12,7 @@ import fs from "node:fs";
 const QUERIES = {
   // FS22 first, plus any farming-sim community; the jobs wanted are server-side
   // (bots, websites, Discord setup, staff), so no need to play the game.
-  "🚜 Farming": ["fs22", "fs22 uk", "farming simulator 22", "fs22 multiplayer", "fs22 server", "farming simulator uk", "farming simulator community", "farming sim discord"],
+  "🚜 Farming": ["fs25", "fs25 server", "farming simulator 25", "fs22", "fs22 uk", "farming simulator 22", "fs22 multiplayer", "fs22 server", "farming simulator uk", "farming simulator community", "farming sim discord"],
   "🚚 Trucking & transport": ["ets2 uk", "truckersmp uk", "american truck simulator", "bus simulator", "train sim uk", "omsi"],
   "🏎️ Other sims": ["sim racing uk", "iracing uk", "flight simulator uk", "msfs uk", "police simulator", "construction simulator"],
   "🎮 UK & Irish gaming": ["uk gaming community", "uk gamers", "irish gaming", "ireland gaming", "fivem uk", "gta rp uk", "minecraft uk"],
@@ -70,6 +70,9 @@ const SKIP = /web3|crypto|nft|blockchain|nsfw|18\+|adult|dating|freelanc\w*|comm
 // the job by opening a ticket. Other roles get added back later, one at a time.
 const TICKET_ONLY = process.env.TICKET_ONLY !== "0";
 const TICKET_WORD = /\btickets?\b/i;
+const FARMING_TEXT = /\b(farming sim\w*|fs ?2[25]|ls ?2[25]|landwirtschafts\w*)\b/i;
+const FARM_ROLE = /\b(farm managers?|managers?|management|community managers?|support team|discord staff|staff team)\b/i;
+const ON_MAP = /\b(field workers?|farm hands?|drivers? needed|(must|need to|required to) (play|be (on|in) (the|our) (map|server))|in-?game (role|job|staff))\b/i;
 // Anywhere in Europe (widened from UK-only on 10 Oct 2026); English is still required.
 const LOCAL = /\b(uk|u\.k\.|united kingdom|british|britain|england|scotland|wales|ireland|irish|northern ireland|gmt|bst|europe|european|eu|euw|eune|cet|cest|eet|germany|german|france|french|netherlands|dutch|belgium|spain|spanish|portugal|italy|italian|poland|polish|sweden|swedish|norway|norwegian|denmark|danish|finland|finnish|austria|switzerland|swiss|czech|slovakia|hungary|romania|greece|croatia|baltic|nordic|scandinavia\w*)\b/i;
 const HIRING = /\b(staff applications?|staff apps|apply for staff|we('re| are) (hiring|recruiting)|hiring|recruiting (staff|mods?|moderators|helpers|developers?)|looking for (an? )?(secretar(y|ies)|(admin|staff) assistants?|note[- ]?takers?|minute[- ]?takers?|ticket (team|staff|handlers?|managers?)|staff|mods?|moderators|helpers|developers?|admins?|support( staff)?|hr( staff)?|media( team)?|event (staff|team)|recruiters?|application reviewers?|bot (devs?|developers?)|web ?(designers?|developers?))|bot developers? (wanted|needed)|(discord )?(managers?|admins?|moderators|mods|helpers) (wanted|needed)|join (our|the) (staff|team)|(staff|mod|moderator|support|hr|media|event|recruitment|helper) (team )?applications? (are )?open|applications? (are )?open)\b/i;
@@ -246,7 +249,10 @@ async function main() {
     ["games or sims, nothing adult/freelance", s => GAMING.test(text(s)) && !SKIP.test(text(s))],
     // Strict: the description itself must advertise an open job he wants.
     ["hiring a role he wants", s => openJob(s.description) || s.hiringTag],
-    ["ticket job", s => !TICKET_ONLY || TICKET_JOB.test(s.description) || TICKET_WORD.test(s.description)],
+    // Farming servers (10 Oct 2026): FS22 or FS25; Discord behind-the-scenes manager roles count
+    // too (manager, farm manager), but never jobs that need him playing on their map.
+    ["ticket job", s => !TICKET_ONLY || TICKET_JOB.test(s.description) || TICKET_WORD.test(s.description)
+      || (FARMING_TEXT.test(text(s)) && FARM_ROLE.test(s.description) && !ON_MAP.test(s.description))],
     // Already tried, and servers he has said no to (seeds.json skip list).
     ["not on his skip lists", s => !TRIED.some(name => s.name.toLowerCase().includes(name)) && !(SEEDS.skip || []).some(name => s.name.toLowerCase().includes(name.toLowerCase()))],
     // He is 16 (10 Oct 2026): the public page must say an age of 16+ or lower (e.g. 13+, 16+).
