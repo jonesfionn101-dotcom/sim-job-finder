@@ -41,6 +41,6 @@ for (const w of WAITING) {
     out.push("");
   } else closed.push(`- ${w.name}: ${status}`);
 }
-out.push("## ⏳ Still waiting", "", ...closed, ...WAITING_ON_REPLY.map(l => `- ${l}`), "");
+out.push("## ⏳ Still waiting", "", "His rule: staff must reply within 24 hours of a ticket. No reply by then = move it to No.", "", ...closed, ...WAITING_ON_REPLY.map(l => `- ${l}`), "");
 fs.writeFileSync("body.md", out.join("\n"));
 console.log(open);

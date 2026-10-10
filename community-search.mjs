@@ -329,6 +329,8 @@ async function main() {
       if (!s.invite) out.push(`- ⚠️ Join link not checked - it may have expired (LIGHT's had, 10 Oct 2026)`);
       if (dropped.length) out.push(`- ⚠️ Rules dropped: ${dropped.join(", ")} - check these yourself`);
       out.push(`- Stage 3 - management active? Check #announcements: a staff post in the last 1-2 days = yes; older = no.`);
+      // His rule (10 Oct 2026): the server must say staff reply to tickets within 24 hours.
+      out.push(`- Must say staff reply within 24 hours? Check the ticket channel's message${/\b24 ?h(ours?|rs?)?\b/i.test(s.description) ? " (their description mentions 24 hours)" : ""}. No reply within 24 hours of your ticket = No.`);
       out.push(`- ${s.description.replace(/\s+/g, " ").slice(0, 200) || "(no description)"}`);
       out.push(`- 🟢 Open job: their description says "${s.hiring}" (read ${today}; Discord doesn't show when it was written)`);
       // Key facts (10 Oct 2026): what he needs before deciding yes or no.
