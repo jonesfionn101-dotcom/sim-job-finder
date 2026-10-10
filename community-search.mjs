@@ -345,6 +345,17 @@ async function main() {
 
   const body = out.join("\n");
   console.log(body);
+  // Build leads (10 Oct 2026): servers that might let him build them an admin/staff app.
+  // Medium-sized (500-5,000), growing a staff team, English, Europe, games - no ticket or age rule.
+  const build = [...seen.values()]
+    .filter(s => RULES.filter(([l]) => ["not outside Europe", "English", "games or sims, nothing adult/freelance", "hiring a role he wants", "not on his skip lists"].includes(l)).every(([, keep]) => keep(s)))
+    .filter(s => s.members >= 500 && s.members <= 5000)
+    .slice(0, 40);
+  fs.writeFileSync("build-leads.md", [
+    `Servers that might let him build an admin/staff app (${today}): medium-sized, English, recruiting staff. Offer the bot in a ticket.`, "",
+    ...(build.length ? build.map(s => `- ${s.name}: ${s.invite || s.url} (${s.members.toLocaleString("en-GB")} members)`) : ["- none this run"]), "",
+  ].join("\n"));
+  if (process.env.GITHUB_OUTPUT) fs.appendFileSync(process.env.GITHUB_OUTPUT, `build=${build.length}\n`);
   if (process.env.GITHUB_OUTPUT) {
     fs.appendFileSync(process.env.GITHUB_OUTPUT, `count=${Math.min(scored.length, SHORTLIST)}\nhiring=${hiringCount}\nbody<<COMMBODY\n${body}\nCOMMBODY\n`);
   }

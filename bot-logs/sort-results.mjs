@@ -154,3 +154,7 @@ fs.writeFileSync(path.join(ROOT, "Servers to join.md"), [
   ...(waiting.length ? waiting : ["Nothing yet. No server has passed every rule so far. The bots keep looking."]),
   "",
 ].join("\n"));
+
+// "Build leads.md" (10 Oct 2026): servers he could offer to build an admin/staff app for.
+const buildIssue = issues.find(i => i.title.startsWith("📋 Build leads"));
+fs.writeFileSync(path.join(ROOT, "Build leads.md"), `# Build leads\n\n${buildIssue ? buildIssue.body : "The first list comes after the next community search."}\n`);

@@ -141,6 +141,11 @@ jobs:
         run: |
           printf '%s\n' "$BODY" > comm-body.md
           bash .github/post-latest.sh "Community search" "$HIRING hiring" comm-body.md
+      - name: Post the build leads (servers he could build an admin app for)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BUILD: ${{ steps.comm.outputs.build }}
+        run: bash .github/post-latest.sh "Build leads" "${BUILD:-0} servers" build-leads.md
       - name: If nothing was found, get help (Claude next session, another AI right now)
         if: steps.comm.outputs.count == '0'
         env:
