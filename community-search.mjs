@@ -136,6 +136,32 @@ export function openJob(description) {
   return hiring && WANTED_ROLE.test(description) ? hiring[0] : null;
 }
 
+/**
+ * Stage 2 checker: for each server, find its join link (on its Discord directory
+ * page, or already known) and ask Discord how many members and how many are online.
+ * Fills s.members, s.online and s.invite in place. Only runs on the few servers
+ * that passed every earlier rule, so it stays quick.
+ */
+async function countPeople(servers) {
+  for (const s of servers) {
+    if (s.online !== undefined) continue;
+    let code = (s.url.match(/discord\.gg\/([A-Za-z0-9-]+)/) || [])[1];
+    if (!code && s.url.includes("discord.com/servers/")) {
+      const page = await fetch(s.url, {signal: AbortSignal.timeout(20000), headers: {"user-agent": "Mozilla/5.0"}}).then(r => r.ok ? r.text() : "").catch(() => "");
+      code = (page.match(/discord\.gg\/([A-Za-z0-9-]+)/) || [])[1];
+    }
+    if (!code) continue;
+    const invite = await fetch(`https://discord.com/api/v10/invites/${code}?with_counts=true`, {signal: AbortSignal.timeout(20000), headers: {"user-agent": "curl/8.0"}})
+      .then(r => r.ok ? r.json() : null).catch(() => null);
+    if (invite?.guild) {
+      s.members = invite.approximate_member_count ?? s.members;
+      s.online = invite.approximate_presence_count;
+      s.invite = `https://discord.gg/${code}`;
+    }
+    await sleep(1500);
+  }
+}
+
 async function main() {
   const seen = new Map();
   let failed = 0;
@@ -234,6 +260,12 @@ async function main() {
   let farm = left.filter(s => FARMING.test(text(s)));
   const farmFunnel = [`${farm.length} farming servers found`];
   for (const [label, keep] of RULES) {
+    // STAGE 2 (10 Oct 2026), just before the "active" limit: a second checker looks up the
+    // real member and online counts of every server still in the running.
+    if (label.startsWith("active")) {
+      await countPeople(left);
+      farm = farm.map(s => left.find(x => x.url === s.url) || s);
+    }
     left = left.filter(keep);
     funnel.push(`${label}: ${left.length}`);
     farm = farm.filter(keep);
@@ -266,7 +298,9 @@ async function main() {
     if (!inGroup.length) out.push("No open jobs found in this group today.", "");
     inGroup.forEach((s, i) => {
       out.push(`### ${i + 1}. ${s.name}`);
-      out.push(`- Open: ${s.url} (${s.members.toLocaleString("en-GB")} members, listing read ${today})`);
+      out.push(`- Open: ${s.invite || s.url} (${s.members.toLocaleString("en-GB")} members${s.online !== undefined ? `, ${s.online.toLocaleString("en-GB")} online` : ", online not known"}, checked ${today})`);
+      // Stage 3: active management can only be seen inside the server, so it's a must-check.
+      out.push(`- Stage 3 - management active? Check #announcements: a staff post in the last 1-2 days = yes; older = no.`);
       out.push(`- ${s.description.replace(/\s+/g, " ").slice(0, 200) || "(no description)"}`);
       out.push(`- 🟢 Open job: their description says "${s.hiring}" (read ${today}; Discord doesn't show when it was written)`);
       // Key facts (10 Oct 2026): what he needs before deciding yes or no.
