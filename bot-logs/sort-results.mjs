@@ -67,7 +67,7 @@ console.log(`Sorted ${yes} into Yes and ${no} into No (${ROOT})`);
 const CHECKS = [
   [/^VTC shortlist|^UK VTC search/, text => /📢 (Staff job|Job post): "/.test(text) && !/none public/.test(text), "no staff job open to outsiders"],
   // Ticket jobs only (10 Oct 2026): results from older rule sets must say it's a ticket job.
-  [/^Community search/, text => /🟢 Open job/.test(text) && /Ticket job: yes/.test(text), "not a ticket job, or no open job in the server's description"],
+  [/^Community search/, text => /🟢 Open job/.test(text) && (/Ticket job: yes/.test(text) || /Rules dropped: /.test(text)), "not a ticket job, or no open job in the server's description"],
   [/^Job shortlist|^App project search/, text => {
     const dates = [...text.matchAll(/[Oo]pened (\d{4}-\d{2}-\d{2})/g)].map(m => Date.parse(m[1]));
     return dates.some(d => Date.now() - d <= 180 * 86400000) && !/plan before any code|could not check/.test(text);

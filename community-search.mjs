@@ -253,24 +253,38 @@ async function main() {
     // Discord's own directory doesn't show the online count; those say "check" instead of failing.
     ["active (100+ online, 5%+ of members)", s => s.online === undefined || (s.online >= 100 && s.online >= s.members * 0.05)],
   ];
-  let left = [...seen.values()];
-  const funnel = [`${left.length} servers found`];
   // The farming search (10 Oct 2026): the same rules, counted for farming servers on their own.
   const FARMING = GROUP_OF[0][1];
-  let farm = left.filter(s => FARMING.test(text(s)));
-  const farmFunnel = [`${farm.length} farming servers found`];
-  for (const [label, keep] of RULES) {
-    // STAGE 2 (10 Oct 2026), just before the "active" limit: a second checker looks up the
-    // real member and online counts of every server still in the running.
-    if (label.startsWith("active")) {
-      await countPeople(left);
-      farm = farm.map(s => left.find(x => x.url === s.url) || s);
+  async function applyRules(dropped) {
+    let left = [...seen.values()];
+    const funnel = [`${left.length} servers found`];
+    let farm = left.filter(s => FARMING.test(text(s)));
+    const farmFunnel = [`${farm.length} farming servers found`];
+    for (const [label, keep] of RULES) {
+      if (dropped.includes(label)) continue;
+      // STAGE 2 (10 Oct 2026), just before the "active" limit: a second checker looks up the
+      // real member and online counts of every server still in the running.
+      if (label.startsWith("active")) {
+        await countPeople(left);
+        farm = farm.map(s => left.find(x => x.url === s.url) || s);
+      }
+      left = left.filter(keep);
+      funnel.push(`${label}: ${left.length}`);
+      farm = farm.filter(keep);
+      farmFunnel.push(`${label}: ${farm.length}`);
     }
-    left = left.filter(keep);
-    funnel.push(`${label}: ${left.length}`);
-    farm = farm.filter(keep);
-    farmFunnel.push(`${label}: ${farm.length}`);
+    return {left, funnel, farmFunnel};
   }
+  // Drop one rule at a time when nothing passes (10 Oct 2026, his choice). Safety rules
+  // (Europe, English, nothing adult/freelance, hiring, skip lists) are never dropped.
+  const DROP_ORDER = ["ticket job", "says 16+ or younger", "active (100+ online, 5%+ of members)", "1,000+ members"];
+  let dropped = [];
+  let {left, funnel, farmFunnel} = await applyRules(dropped);
+  while (!left.length && dropped.length < DROP_ORDER.length) {
+    dropped = DROP_ORDER.slice(0, dropped.length + 1);
+    ({left, funnel, farmFunnel} = await applyRules(dropped));
+  }
+  if (dropped.length) funnel.push(`(rules dropped to find something: ${dropped.join(", ")})`);
   console.error(`Funnel: ${funnel.join(" → ")}`);
   console.error(`Farming: ${farmFunnel.join(" → ")}`);
   const scored = left
@@ -300,6 +314,7 @@ async function main() {
       out.push(`### ${i + 1}. ${s.name}`);
       out.push(`- Open: ${s.invite || s.url} (${s.members.toLocaleString("en-GB")} members${s.online !== undefined ? `, ${s.online.toLocaleString("en-GB")} online` : ", online not known"}, checked ${today})`);
       // Stage 3: active management can only be seen inside the server, so it's a must-check.
+      if (dropped.length) out.push(`- ⚠️ Rules dropped: ${dropped.join(", ")} - check these yourself`);
       out.push(`- Stage 3 - management active? Check #announcements: a staff post in the last 1-2 days = yes; older = no.`);
       out.push(`- ${s.description.replace(/\s+/g, " ").slice(0, 200) || "(no description)"}`);
       out.push(`- 🟢 Open job: their description says "${s.hiring}" (read ${today}; Discord doesn't show when it was written)`);
