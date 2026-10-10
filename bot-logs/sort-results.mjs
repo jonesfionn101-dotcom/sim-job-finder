@@ -13,9 +13,15 @@ import path from "node:path";
 
 const REPO = "jonesfionn101-dotcom/sim-job-finder";
 const ROOT = process.env.RESULTS_DIR || "G:\\AI_Projects\\Job Results";
-const YES = path.join(ROOT, "Yes");
-const NO = path.join(ROOT, "No");
-[YES, NO].forEach(dir => fs.mkdirSync(dir, {recursive: true}));
+// 10 Oct 2026: the bots never decide for him. Jobs that pass every rule wait in
+// "To check" until HE says yes or no (pop-up buttons move them to Yes or No).
+// Jobs the bots rule out go to "Ruled out by bots". Yes and No hold only his answers.
+const YES = path.join(ROOT, "To check");
+const NO = path.join(ROOT, "Ruled out by bots");
+const HIS_YES = path.join(ROOT, "Yes");
+const HIS_NO = path.join(ROOT, "No");
+[YES, NO, HIS_YES, HIS_NO].forEach(dir => fs.mkdirSync(dir, {recursive: true}));
+const decided = file => fs.existsSync(path.join(HIS_YES, file)) || fs.existsSync(path.join(HIS_NO, file));
 
 // Plain filenames only: brackets, # and dashes like "—" made files impossible to move.
 const safe = text => text.replace(/[^A-Za-z0-9 &()._,'-]/g, " ").replace(/\s+/g, " ").trim().slice(0, 80).trim();
@@ -30,6 +36,7 @@ for (const {title, body} of issues) {
   const fresh = body.startsWith("🆕") ? `🆕 New information (searched by Claude, ${title.match(/updated ([^)]+)/)?.[1] || "today"})\n` : "";
   for (const section of main.split(/^### /m).slice(1)) {
     const name = safe(section.split("\n")[0].replace(/^\d+\.\s*/, ""));
+    if (decided(`${search} - ${name}.md`)) continue; // he has already answered this one
     fs.rmSync(path.join(NO, `${search} - ${name}.md`), {force: true}); // moved: no longer a no
     fs.writeFileSync(path.join(YES, `${search} - ${name}.md`), `# ✅ ${name}\n${fresh}From: ${search} (${title.match(/\(updated [^)]+\)/)?.[0] || ""})\n\n${section.split("\n").slice(1).join("\n").trim()}\n`);
     yes++;
@@ -74,7 +81,7 @@ for (const file of fs.readdirSync(YES).filter(f => fs.existsSync(path.join(NO, f
   fs.rmSync(path.join(YES, file));
   console.log(`  in both folders, kept in No: ${file}`);
 }
-console.log(`Final check: ${fs.readdirSync(YES).length} in Yes, ${fs.readdirSync(NO).length} in No, none in both.`);
+console.log(`Final check: ${fs.readdirSync(YES).length} to check, ${fs.readdirSync(NO).length} ruled out by bots, none in both.`);
 
 // One file for Claude (9 Oct 2026): what every bot did, in one place, so the
 // session-start update only needs to read this. Lives in "Job Results\AI only".
@@ -100,8 +107,10 @@ fs.writeFileSync(path.join(AI, "bot-summary.md"), [
   ...(stuck.length ? stuck.map(i => `- #${i.number} ${i.title} (last update ${i.updatedAt.slice(0, 16).replace("T", " ")})`) : ["- nothing stuck"]),
   "",
   "## Folders",
-  `- Yes: ${fs.readdirSync(YES).join(", ") || "empty"}`,
-  `- No: ${fs.readdirSync(NO).length} entries`,
+  `- To check (waiting for him): ${fs.readdirSync(YES).join(", ") || "empty"}`,
+  `- His Yes: ${fs.readdirSync(HIS_YES).join(", ") || "empty"}`,
+  `- His No: ${fs.readdirSync(HIS_NO).length} entries`,
+  `- Ruled out by bots: ${fs.readdirSync(NO).length} entries`,
   "",
 ].join("\n"));
 console.log(`Summary for Claude written to ${path.join(AI, "bot-summary.md")}`);
