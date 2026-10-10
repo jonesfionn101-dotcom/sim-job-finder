@@ -63,7 +63,9 @@ const WANTED_ROLE = /\b(staff|moderators?|mods|admins?|support|helpers?|hr|human
 export const AGE_OK = /(\b1[0-6]\s*\+|\b(ages?|aged)\s*1[0-6]\s*(\+|and (over|up|above)|or (older|over|above))|\bmin(imum)?\.?\s*age\s*(of|is|:)?\s*1[0-6]\b)/i;
 const TRIED = (process.env.TRIED_VTCS || "").split(/[\n,]/).map(n => n.trim().toLowerCase()).filter(Boolean);
 // Freelance/hire-me marketplaces are not jobs he wants (10 Oct 2026).
-const SKIP = /web3|crypto|nft|blockchain|nsfw|18\+|adult|dating|freelanc\w*|commissions?|fiverr|upwork|hire me|for hire|paid work|gigs?\b/i;
+const SKIP = /web3|crypto|nft|blockchain|nsfw|18\+|adult|dating|freelanc\w*|commissions?|fiverr|upwork|hire me|for hire|paid work|gigs?\b|co-?owner|help (to )?fund|investors?|brand new (discord )?server|roblox studios?|just (started|opened)/i;
+// Learned 10 Oct 2026: Lore Forged wanted Roblox devs + a paying co-owner; LIGHT was a
+// brand new chat server whose invite had expired. Those kinds are skipped now.
 // TICKET JOBS ONLY for now (10 Oct 2026): the server must say you apply or get
 // the job by opening a ticket. Other roles get added back later, one at a time.
 const TICKET_ONLY = process.env.TICKET_ONLY !== "0";
@@ -278,7 +280,10 @@ async function main() {
   // Drop one rule at a time when nothing passes (10 Oct 2026, his choice). Safety rules
   // (Europe, English, nothing adult/freelance, hiring, skip lists) are never dropped.
   // Turned off again 10 Oct 2026 (his choice): strict rules only. Was: ticket job, 16+, active, 1,000+ members.
-  const DROP_ORDER = [];
+  // Back on 10 Oct 2026 in turns (his choice): one search strict, the next one drops rules.
+  // A search takes ~30 minutes, so the turns swap every half hour.
+  const RELAXED_TURN = Math.floor(Date.now() / 1800000) % 2 === 1;
+  const DROP_ORDER = RELAXED_TURN ? ["ticket job", "says 16+ or younger", "active (100+ online, 5%+ of members)", "1,000+ members"] : [];
   let dropped = [];
   let {left, funnel, farmFunnel} = await applyRules(dropped);
   while (!left.length && dropped.length < DROP_ORDER.length) {
@@ -315,6 +320,7 @@ async function main() {
       out.push(`### ${i + 1}. ${s.name}`);
       out.push(`- Open: ${s.invite || s.url} (${s.members.toLocaleString("en-GB")} members${s.online !== undefined ? `, ${s.online.toLocaleString("en-GB")} online` : ", online not known"}, checked ${today})`);
       // Stage 3: active management can only be seen inside the server, so it's a must-check.
+      if (!s.invite) out.push(`- ⚠️ Join link not checked - it may have expired (LIGHT's had, 10 Oct 2026)`);
       if (dropped.length) out.push(`- ⚠️ Rules dropped: ${dropped.join(", ")} - check these yourself`);
       out.push(`- Stage 3 - management active? Check #announcements: a staff post in the last 1-2 days = yes; older = no.`);
       out.push(`- ${s.description.replace(/\s+/g, " ").slice(0, 200) || "(no description)"}`);
