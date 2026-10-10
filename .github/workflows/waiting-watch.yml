@@ -1,0 +1,30 @@
+name: Waiting watch
+
+on:
+  schedule:
+    - cron: "40 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check the servers he is waiting on
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          OPEN=$(node waiting-watch.mjs)
+          bash .github/post-latest.sh "Waiting watch" "$OPEN open" body.md

@@ -23,7 +23,7 @@ const HIS_NO = path.join(ROOT, "No");
 [YES, NO, HIS_YES, HIS_NO].forEach(dir => fs.mkdirSync(dir, {recursive: true}));
 // Searches that can produce ticket jobs. Others (code jobs, app projects) are
 // ruled out while the focus is ticket jobs; add them back here when he asks.
-const TICKET_SEARCHES = /^(Community search|VTC shortlist|UK VTC search)$/;
+const TICKET_SEARCHES = /^(Community search|VTC shortlist|UK VTC search|Waiting watch)$/;
 const decided = file => fs.existsSync(path.join(HIS_YES, file)) || fs.existsSync(path.join(HIS_NO, file));
 
 // Plain filenames only: brackets, # and dashes like "—" made files impossible to move.
@@ -140,7 +140,11 @@ for (const f of fs.readdirSync(YES).filter(f => f.endsWith(".md"))) {
 }
 const waiting = [
   "## ✅ Best match (every rule passed)", "", ...(best.length ? best : ["None yet."]), "",
-  "## 🟡 Close match (some rules dropped)", "", ...(close.length ? close : ["None yet."]),
+  "## 🟡 Close match (some rules dropped)", "", ...(close.length ? close : ["None yet."]), "",
+  // Waiting (10 Oct 2026): servers he is waiting on, from the Waiting watch bot.
+  "## ⏳ Waiting", "",
+  ...((issues.find(i => i.title.startsWith("📋 Waiting watch"))?.body || "").split("## ⏳ Still waiting")[1] || "- (waiting watch has not run yet)")
+    .split("\n").filter(l => l.startsWith("- ")),
 ];
 fs.writeFileSync(path.join(ROOT, "Servers to join.md"), [
   `# Servers to join (updated ${new Date().toLocaleString("en-IE", {timeZone: "Europe/Dublin"})})`,
