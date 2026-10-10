@@ -21,7 +21,7 @@ const seeds = JSON.parse(fs.readFileSync("seeds.json", "utf8"));
 const tried = seeds.community.queries;
 
 async function askAnotherAI() {
-  const prompt = `I search Discord's public server directory (discord.com/servers?query=...) for English-speaking UK or Irish gaming/sim communities (farming sim, truck sim, sim racing, UK gaming) whose description says they are hiring RIGHT NOW for a staff role an outsider can apply for: moderator, support, HR, ticket team, secretary, admin assistant, note taker, developer, media, events. Also servers that say "open a ticket to apply".
+  const prompt = `I search Discord's public server directory (discord.com/servers?query=...) for English-speaking European (UK, Ireland or anywhere in Europe) gaming/sim communities (farming sim, truck sim, sim racing, UK gaming) whose description says they are hiring RIGHT NOW for a staff role an outsider can apply for: moderator, support, HR, ticket team, secretary, admin assistant, note taker, developer, media, events. Also servers that say "open a ticket to apply".
 These search phrases found nothing: ${tried.slice(-40).join("; ")}.
 Suggest 10 NEW short search phrases (2-5 words each) likely to find such servers. Reply with ONLY a JSON array of strings.`;
   for (let attempt = 1; attempt <= 3; attempt++) {
