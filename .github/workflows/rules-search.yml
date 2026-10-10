@@ -85,11 +85,11 @@ jobs:
     needs: clock
     if: needs.clock.outputs.go == 'yes' && vars.COMMUNITY_SEARCH != 'off'
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 35
     strategy:
       fail-fast: false
       matrix:
-        shard: [0, 1, 2, 3]
+        shard: [0, 1, 2, 3, 4, 5]
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -98,11 +98,11 @@ jobs:
       - name: Tests (each role, English check, CLA rule)
         run: node --test tests/roles.test.mjs tests/english.test.mjs tests/cla.test.mjs
       - name: Search a quarter of the communities
-        timeout-minutes: 20
+        timeout-minutes: 30
         env:
           WIDEN: 2
           SHARD: ${{ matrix.shard }}
-          SHARDS: 4
+          SHARDS: 6
           COLLECT_ONLY: found-${{ matrix.shard }}.json
         run: node community-search.mjs
       - uses: actions/upload-artifact@v4
