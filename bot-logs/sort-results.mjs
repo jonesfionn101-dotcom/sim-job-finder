@@ -157,4 +157,10 @@ fs.writeFileSync(path.join(ROOT, "Servers to join.md"), [
 
 // "Build leads.md" (10 Oct 2026): servers he could offer to build an admin/staff app for.
 const buildIssue = issues.find(i => i.title.startsWith("📋 Build leads"));
-fs.writeFileSync(path.join(ROOT, "Build leads.md"), `# Build leads\n\n${buildIssue ? buildIssue.body : "The first list comes after the next community search."}\n`);
+// The Bot leads helper (10 Oct 2026): sim communities checked live for size and activity.
+const botIssue = issues.find(i => i.title.startsWith("📋 Bot leads"));
+fs.writeFileSync(path.join(ROOT, "Build leads.md"), [
+  "# Build leads", "",
+  "## Checked live (Bot leads helper, every 3 hours)", "", botIssue ? botIssue.body : "The first list comes after the helper's next run.", "",
+  "## From the community search", "", buildIssue ? buildIssue.body : "The first list comes after the next community search.", "",
+].join("\n"));

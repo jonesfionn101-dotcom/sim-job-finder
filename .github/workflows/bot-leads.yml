@@ -1,0 +1,30 @@
+name: Bot leads
+
+on:
+  schedule:
+    - cron: "10 */3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  leads:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Find communities for the trial staff tracker bot
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          COUNT=$(node bot-leads.mjs)
+          bash .github/post-latest.sh "Bot leads" "$COUNT communities" body.md
