@@ -66,3 +66,4 @@ Every automatic search: when it ran (Irish time), how it ended, and what it foun
 | 11 Oct 2026 16:30 | 16:31 | Find recruiting VTCs | success | VTC shortlist: 0 recruiting (updated 11 Oct 16:31) |
 | 11 Oct 2026 16:57 | 16:57 | Work on bot-tasks | success | - |
 | 11 Oct 2026 19:09 | 19:11 | Lead feeder (new information for the searches) | success | Lead feeder: 9 new leads (9 phrases, 0 list pages, 0 servers) |
+| 11 Oct 2026 19:27 | 19:48 | Rules job search | cancelled | Community search: 26 hiring (updated 11 Oct 19:46);App project search: 2 found (updated 11 Oct 19:28);UK VTC search: 0 found, 10+ staff (updated 09 Oct 16:37) |
