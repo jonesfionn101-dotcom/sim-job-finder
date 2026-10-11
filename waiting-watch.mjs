@@ -27,6 +27,8 @@ const WAITING_ON_REPLY = [
   "BritishAce Community Server - asked in general chat how to open a ticket (10 Oct); idea: tier-tracker bot for their 3-tier system. Waiting.",
   "Yapton & District (bus sim) - emails checked and look GENUINE (domain is theirs); dylxn gave hiring emails; he asked dylxn 4 checking questions (10 Oct). Waiting.",
   "United Convoys - ticket answered fast (passes 24h rule). Applied via their apply channel (10 Oct); they check applications once a week.",
+  "Global Trucking - HR passed his bot offer to the COO (BooSter2285) 11 Oct. Do NOT tag staff there. Waiting.",
+  "At The Mile Logistics - asked in general chat how to open a ticket (11 Oct). Waiting.",
   "TruckersMP - Addon Team/Artist: applications closed; needs a website login. Their site blocks bots, so check truckersmp.com/recruitment yourself now and then.",
 ];
 
