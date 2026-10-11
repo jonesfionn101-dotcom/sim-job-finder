@@ -15,7 +15,7 @@ const WAITING = [
 const WAITING_ON_REPLY = [
   "PlayGSL - replied in under 3 hours (passes 24h rule). No bot needed. Everyone starts as Trial Helper, 2-3 months to full Helper. They asked for his ideas to make the server active - he is replying.",
   "Golden Phoenix Express (GPE) - HR ticket open (10 Oct): offered a free trial staff tracker bot, waiting for their reply.",
-  "Line of Energy VTC - REPLIED 11 Oct: Ymepbelgium (vice project manager) asked whether he wants a staff role or to make a bot. Talking.",
+  "Line of Energy VTC - 11 Oct: staff application UNDER REVIEW with project management. Do not chase.",
   "WASD - support ticket #157 open (10 Oct): asked about ticket staff roles + offered the tracker bot, waiting for their reply.",
   "Arctic VTC - HR ticket open (10 Oct): asked about outsider staff roles + offered the tracker bot, waiting.",
   "TruckersHub - Event Management ticket open (10 Oct): suggested Convoy-mode events + asked about the tracker bot, waiting.",
