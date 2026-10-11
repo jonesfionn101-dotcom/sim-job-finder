@@ -49,3 +49,4 @@ Every automatic search: when it ran (Irish time), how it ended, and what it foun
 | 10 Oct 2026 23:55 | 23:55 | Work on bot-tasks | success | - |
 | 11 Oct 2026 00:39 | 00:42 | Lead feeder (new information for the searches) | success | - |
 | 11 Oct 2026 01:58 | 02:08 | Rules job search | cancelled | Community search: 0 hiring (updated 11 Oct 02:02);App project search: 2 found (updated 11 Oct 01:49);UK VTC search: 0 found, 10+ staff (updated 09 Oct 16:37) |
+| 11 Oct 2026 02:10 | 02:16 | Find open-source jobs | success | Job shortlist: 0 found (updated 11 Oct 02:16) |
