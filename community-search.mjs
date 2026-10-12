@@ -57,7 +57,7 @@ for (const [group, topics] of Object.entries(TOPIC_OF)) {
   for (const topic of topics) for (const words of JOB_WORDS) QUERIES[group].push(`${topic} ${words}`);
 }
 // The kinds of job he wants (all server-side, no gameplay needed).
-const WANTED_ROLE = /\b(staff|moderators?|mods|admins?|support|helpers?|hr|human resources|developers?|devs?|bot|web(site)?|designers?|media|events?|community managers?|managers?|team|recruit(ers?|ment)|application reviewers?|reviewers?|secretar(y|ies)|(admin|staff) assistants?|note[- ]?takers?|minute[- ]?takers?|transcri\w+|documentation|ticket (team|staff|handlers?|loggers?|managers?)|clerks?)\b/i;
+const WANTED_ROLE = /\b(staff|moderators?|mods|admins?|support|helpers?|hr|human resources|developers?|devs?|bot|web(site)?|designers?|media|events?|community managers?|managers?|team|recruit(ers?|ment)|application reviewers?|reviewers?|secretar(y|ies)|(admin|staff) assistants?|note[- ]?takers?|minute[- ]?takers?|transcri\w+|documentation|ticket (team|staff|handlers?|loggers?|managers?)|clerks?|(event|media) assistants?|event team|public relations|pr team)\b/i;
 // Communities already joined (private TRIED_VTCS secret): never listed.
 // "13+", "16+", "ages 14 and up", "aged 16 or older", "minimum age 15"... anything 16 or under.
 export const AGE_OK = /(\b1[0-6]\s*\+|\b(ages?|aged)\s*1[0-6]\s*(\+|and (over|up|above)|or (older|over|above))|\bmin(imum)?\.?\s*age\s*(of|is|:)?\s*1[0-6]\b)/i;
@@ -66,16 +66,19 @@ const TRIED = (process.env.TRIED_VTCS || "").split(/[\n,]/).map(n => n.trim().to
 const SKIP = /web3|crypto|nft|blockchain|nsfw|18\+|adult|dating|freelanc\w*|commissions?|fiverr|upwork|hire me|for hire|paid work|gigs?\b|co-?owner|help (to )?fund|investors?|brand new (discord )?server|roblox\w*|just (started|opened)/i;
 // Learned 10 Oct 2026: Lore Forged wanted Roblox devs + a paying co-owner; LIGHT was a
 // brand new chat server whose invite had expired. Those kinds are skipped now.
-// TICKET JOBS ONLY for now (10 Oct 2026): the server must say you apply or get
-// the job by opening a ticket. Other roles get added back later, one at a time.
-const TICKET_ONLY = process.env.TICKET_ONLY !== "0";
+// TICKET JOBS ONLY was on from 10 Oct 2026. Lightened 12 Oct 2026 (his choice), from what GPE
+// showed: big VTCs say "open a ticket" only INSIDE (a roles/recruitment channel), never in the
+// public description, so the rule threw away the right servers. Set TICKET_ONLY=1 to bring it back.
+const TICKET_ONLY = process.env.TICKET_ONLY === "1";
 const TICKET_WORD = /\btickets?\b/i;
 const FARMING_TEXT = /\b(farming sim\w*|fs ?2[25]|ls ?2[25]|landwirtschafts\w*)\b/i;
 const FARM_ROLE = /\b(farm managers?|managers?|management|community managers?|support team|discord staff|staff team)\b/i;
 const ON_MAP = /\b(field workers?|farm hands?|drivers? needed|(must|need to|required to) (play|be (on|in) (the|our) (map|server))|in-?game (role|job|staff))\b/i;
 // Anywhere in Europe (widened from UK-only on 10 Oct 2026); English is still required.
 const LOCAL = /\b(uk|u\.k\.|united kingdom|british|britain|england|scotland|wales|ireland|irish|northern ireland|gmt|bst|europe|european|eu|euw|eune|cet|cest|eet|germany|german|france|french|netherlands|dutch|belgium|spain|spanish|portugal|italy|italian|poland|polish|sweden|swedish|norway|norwegian|denmark|danish|finland|finnish|austria|switzerland|swiss|czech|slovakia|hungary|romania|greece|croatia|baltic|nordic|scandinavia\w*)\b/i;
-const HIRING = /\b(staff applications?|staff apps|apply for staff|we('re| are) (hiring|recruiting)|hiring|recruiting (staff|mods?|moderators|helpers|developers?)|looking for (an? )?(secretar(y|ies)|(admin|staff) assistants?|note[- ]?takers?|minute[- ]?takers?|ticket (team|staff|handlers?|managers?)|staff|mods?|moderators|helpers|developers?|admins?|support( staff)?|hr( staff)?|media( team)?|event (staff|team)|recruiters?|application reviewers?|bot (devs?|developers?)|web ?(designers?|developers?))|bot developers? (wanted|needed)|(discord )?(managers?|admins?|moderators|mods|helpers) (wanted|needed)|join (our|the) (staff|team)|(staff|mod|moderator|support|hr|media|event|recruitment|helper) (team )?applications? (are )?open|applications? (are )?open)\b/i;
+const HIRING = /\b(staff applications?|staff apps|apply for staff|we('re| are) (hiring|recruiting)|hiring|recruiting (staff|mods?|moderators|helpers|developers?)|looking for (an? )?(secretar(y|ies)|(admin|staff) assistants?|note[- ]?takers?|minute[- ]?takers?|ticket (team|staff|handlers?|managers?)|staff|mods?|moderators|helpers|developers?|admins?|support( staff)?|hr( staff)?|media( team)?|event (staff|team)|recruiters?|application reviewers?|bot (devs?|developers?)|web ?(designers?|developers?))|bot developers? (wanted|needed)|(discord )?(managers?|admins?|moderators|mods|helpers) (wanted|needed)|join (our|the) (staff|team)|(staff|mod|moderator|support|hr|media|event|recruitment|helper) (team )?applications? (are )?open|applications? (are )?open|recruitment (is )?open|now recruiting|(open|available) (roles|positions)|(roles|positions) (are )?open|no driver (needed|required)|(not|n't) (need|required) to be a driver)\b/i;
+// Learned at GPE (12 Oct 2026): VTCs list roles that need no driving (event assistant, media,
+// development). Those are the ones he can take while his TruckersMP login is broken.
 // Ticket route (9 Oct 2026): servers where you open a ticket to apply or to be given a job.
 const TICKET_JOB = /\b(open (a|an) (ticket|application) to (apply|join|get (a )?(job|role|task))|apply (via|through|by|in) (a )?tickets?|tickets? (to|for) (apply|applications?|staff|jobs?|roles?))\b/i;
 // Well-known servers only (10 Oct 2026, with the ticket-jobs focus).
