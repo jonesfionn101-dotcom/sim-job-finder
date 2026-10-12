@@ -14,7 +14,7 @@ const WAITING = [
 // Waiting with no public page to watch: shown so he remembers them.
 const WAITING_ON_REPLY = [
   "PlayGSL - replied in under 3 hours (passes 24h rule). No bot needed. Everyone starts as Trial Helper, 2-3 months to full Helper. They asked for his ideas to make the server active - he is replying.",
-  "Golden Phoenix Express (GPE) - HR ticket open (10 Oct): offered a free trial staff tracker bot, waiting for their reply.",
+  "Golden Phoenix Express (GPE) - bot: NO. Event Assistant application SENT 12 Oct; answer expected ~14 Oct. Do not chase.",
   "Line of Energy VTC - 11 Oct: staff application UNDER REVIEW with project management. Do not chase.",
   "WASD - support ticket #157 open (10 Oct): asked about ticket staff roles + offered the tracker bot, waiting for their reply.",
   "Arctic VTC - HR ticket open (10 Oct): asked about outsider staff roles + offered the tracker bot, waiting.",
