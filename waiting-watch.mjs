@@ -17,7 +17,7 @@ const WAITING_ON_REPLY = [
   "Golden Phoenix Express (GPE) - bot: NO. Event Assistant application SENT 12 Oct; answer expected ~14 Oct. Do not chase.",
   "Line of Energy VTC - 11 Oct: staff application UNDER REVIEW with project management. Do not chase.",
   "WASD - support ticket #157 open (10 Oct): asked about ticket staff roles + offered the tracker bot, waiting for their reply.",
-  "Arctic VTC - bot: NO. 12 Oct: contact ticket asking about Event Planner (behind the scenes) + whether Trucky is OK. Ava is RESPONDING now. HR closed. Never mention the bot.",
+  "Arctic VTC - bot: NO. 12 Oct: contact ticket asking about Event Planner: open to outsiders (no driver needed). Ava passed him to the Event Department - WAITING for them. Application is short. Tracker = TruckersHub. HR closed. HR closed. Never mention the bot.",
   "TruckersHub - Event Management ticket open (10 Oct): suggested Convoy-mode events + asked about the tracker bot, waiting.",
   "MrSealyPeeps - suggestion ticket open (10 Oct): offered the tracker bot + asked about staff roles, waiting.",
   "A.P. 101 Gaming - asked in general chat how to contact staff (10 Oct). venda13 [ABOO] offered to help at 3:32 PM - check if staff.",
