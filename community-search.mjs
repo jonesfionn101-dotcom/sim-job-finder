@@ -139,9 +139,15 @@ async function listings(query) {
  * when the description both advertises hiring AND names a role he wants.
  * Every role has tests in tests/roles.test.mjs.
  */
+// Tightened 13 Oct 2026 (his choice): the description must name a support-side role he wants
+// (HR, support, helpers, tickets, moderators) - event/media roles alone no longer count.
+// SUPPORT_ONLY=0 goes back to the wider list.
+const SUPPORT_ROLE = /\b(hr|human resources|support( team| staff)?|helpers?|ticket (team|staff|handlers?|support)|moderators?|mods)\b/i;
+const SUPPORT_ONLY = process.env.SUPPORT_ONLY !== "0";
 export function openJob(description) {
   const hiring = description.match(HIRING) || description.match(TICKET_JOB);
-  return hiring && WANTED_ROLE.test(description) ? hiring[0] : null;
+  const role = SUPPORT_ONLY ? SUPPORT_ROLE : WANTED_ROLE;
+  return hiring && role.test(description) ? hiring[0] : null;
 }
 
 /**
