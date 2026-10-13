@@ -100,3 +100,4 @@ Every automatic search: when it ran (Irish time), how it ended, and what it foun
 | 13 Oct 2026 04:15 | 04:15 | Clear-out (save everything first) | success | - |
 | 13 Oct 2026 04:51 | 04:51 | Work on bot-tasks | success | - |
 | 13 Oct 2026 04:51 | 05:21 | Rules job search | cancelled | Community search: 0 hiring (updated 13 Oct 05:19);App project search: 2 found (updated 13 Oct 04:53);UK VTC search: 0 found, 10+ staff (updated 09 Oct 16:37) |
+| 13 Oct 2026 09:21 | 09:23 | Find open-source jobs | success | Job shortlist: 1 found (updated 13 Oct 09:22) |
