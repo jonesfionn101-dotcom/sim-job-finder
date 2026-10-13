@@ -99,3 +99,4 @@ Every automatic search: when it ran (Irish time), how it ended, and what it foun
 | 13 Oct 2026 03:06 | 03:08 | Lead feeder (new information for the searches) | success | Lead feeder: 8 new leads (8 phrases, 0 list pages, 0 servers) |
 | 13 Oct 2026 04:15 | 04:15 | Clear-out (save everything first) | success | - |
 | 13 Oct 2026 04:51 | 04:51 | Work on bot-tasks | success | - |
+| 13 Oct 2026 04:51 | 05:21 | Rules job search | cancelled | Community search: 0 hiring (updated 13 Oct 05:19);App project search: 2 found (updated 13 Oct 04:53);UK VTC search: 0 found, 10+ staff (updated 09 Oct 16:37) |
