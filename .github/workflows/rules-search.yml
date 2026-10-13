@@ -141,6 +141,24 @@ jobs:
         run: |
           printf '%s\n' "$BODY" > comm-body.md
           bash .github/post-latest.sh "Community search" "$HIRING hiring" comm-body.md
+      # Side-by-side run (13 Oct 2026, his choice): the same servers checked again with the
+      # wider role list (events, media, design too), posted as its own issue.
+      - id: wide
+        name: Same servers, wider role list
+        env:
+          TRIED_VTCS: ${{ secrets.TRIED_VTCS }}
+          WIDEN: 2
+          MERGE: found
+          SUPPORT_ONLY: "0"
+        run: node community-search.mjs > /dev/null
+      - name: Post the wide list as its own issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BODY: ${{ steps.wide.outputs.body }}
+          HIRING: ${{ steps.wide.outputs.hiring }}
+        run: |
+          printf '%s\n' "$BODY" > wide-body.md
+          bash .github/post-latest.sh "Community search (wide)" "$HIRING hiring" wide-body.md
       - name: Post the build leads (servers he could build an admin app for)
         env:
           GH_TOKEN: ${{ github.token }}
