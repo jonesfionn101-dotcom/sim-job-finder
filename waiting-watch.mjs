@@ -14,10 +14,10 @@ const WAITING = [
 // Waiting with no public page to watch: shown so he remembers them.
 const WAITING_ON_REPLY = [
   "PlayGSL - replied in under 3 hours (passes 24h rule). No bot needed. Everyone starts as Trial Helper, 2-3 months to full Helper. They asked for his ideas to make the server active - he is replying.",
-  "Golden Phoenix Express (GPE) - bot: NO. Event Assistant application SENT 12 Oct; answer expected ~14 Oct. Do not chase.",
-  "Line of Energy VTC - 11 Oct: staff application UNDER REVIEW with project management. Do not chase.",
+  "Golden Phoenix Express (GPE) - WAITING ON A RESPONSE. bot: NO. Event Assistant application SENT 12 Oct; answer expected ~14 Oct. Do not chase.",
+  "Line of Energy VTC - WAITING ON A RESPONSE. 11 Oct: staff application UNDER REVIEW with project management. Do not chase.",
   "WASD - support ticket #157 open (10 Oct): asked about ticket staff roles + offered the tracker bot, waiting for their reply.",
-  "Arctic VTC - bot: NO. 12 Oct: contact ticket asking about Event Planner: open to outsiders (no driver needed). Ava passed him to the Event Department - WAITING for them. Application is short. Tracker = TruckersHub. HR closed. HR closed. Never mention the bot.",
+  "Arctic VTC - WAITING ON A RESPONSE. bot: NO. 12 Oct: contact ticket asking about Event Planner: open to outsiders (no driver needed). Ava passed him to the Event Department - WAITING for them. Application is short. Tracker = TruckersHub. HR closed. HR closed. Never mention the bot.",
   "TruckersHub - Event Management ticket open (10 Oct): suggested Convoy-mode events + asked about the tracker bot, waiting.",
   "MrSealyPeeps - suggestion ticket open (10 Oct): offered the tracker bot + asked about staff roles, waiting.",
   "A.P. 101 Gaming - asked in general chat how to contact staff (10 Oct). venda13 [ABOO] offered to help at 3:32 PM - check if staff.",
@@ -27,8 +27,9 @@ const WAITING_ON_REPLY = [
   "BritishAce Community Server - asked in general chat how to open a ticket (10 Oct); idea: tier-tracker bot for their 3-tier system. Waiting.",
   "Yapton & District (bus sim) - emails checked and look GENUINE (domain is theirs); dylxn gave hiring emails; he asked dylxn 4 checking questions (10 Oct). Waiting.",
   "United Convoys - ticket answered fast (passes 24h rule). Applied via their apply channel (10 Oct); they check applications once a week.",
-  "Global Trucking - HR passed his bot offer to the COO (BooSter2285) 11 Oct. Do NOT tag staff there. Waiting.",
+  "Global Trucking - WAITING ON A RESPONSE: removed 12 Oct, appeal ticket open; GM passing it to COO/Founder. Do NOT tag staff.",
   "At The Mile Logistics - asked in general chat how to open a ticket (11 Oct). Waiting.",
+  "Truck Club Transport - WAITING ON A RESPONSE: Graphics Designer ticket (ticket-0276). El Pie passed him to Olli (COO) at 5:51 PM 13 Oct. 1-hour rule: no reply by 6:51 PM = move on.",
   "TruckersMP - Addon Team/Artist: applications closed; needs a website login. Their site blocks bots, so check truckersmp.com/recruitment yourself now and then.",
 ];
 
