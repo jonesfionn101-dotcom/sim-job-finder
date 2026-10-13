@@ -29,7 +29,7 @@ const WAITING_ON_REPLY = [
   "United Convoys - ticket answered fast (passes 24h rule). Applied via their apply channel (10 Oct); they check applications once a week.",
   "Global Trucking - WAITING ON A RESPONSE: removed 12 Oct, appeal ticket open; GM passing it to COO/Founder. Do NOT tag staff.",
   "At The Mile Logistics - asked in general chat how to open a ticket (11 Oct). Waiting.",
-  "Truck Club Transport - WAITING ON A RESPONSE: Graphics Designer ticket (ticket-0276). El Pie passed him to Olli (COO) at 5:51 PM 13 Oct. 1-hour rule: no reply by 6:51 PM = move on.",
+  "Truck Club Transport - WAITING ON A RESPONSE: ticket-0276. Olli explained Graphics Designer (banners, logos, VTC photos) - he is NOT taking it; asking for a ticket/support role instead. El Pie passed him to Olli (COO) at 5:51 PM 13 Oct. 1-hour rule: no reply by 6:51 PM = move on.",
   "TruckersMP - Addon Team/Artist: applications closed; needs a website login. Their site blocks bots, so check truckersmp.com/recruitment yourself now and then.",
 ];
 
