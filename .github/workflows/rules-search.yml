@@ -89,7 +89,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        shard: [0, 1, 2, 3, 4, 5]
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -102,7 +102,7 @@ jobs:
         env:
           WIDEN: 2
           SHARD: ${{ matrix.shard }}
-          SHARDS: 6
+          SHARDS: 10
           COLLECT_ONLY: found-${{ matrix.shard }}.json
         run: node community-search.mjs
       - uses: actions/upload-artifact@v4
