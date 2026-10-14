@@ -1,0 +1,27 @@
+name: Site fault check
+
+on:
+  schedule:
+    # Twice a day - websites don't change faster than that.
+    - cron: "15 7,19 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - id: check
+        run: echo "faults=$(node site-fault-check.mjs)" >> "$GITHUB_OUTPUT"
+      - name: Post the results as an issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash .github/post-latest.sh "Radio site faults" "${{ steps.check.outputs.faults }} found" body.md
