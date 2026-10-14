@@ -124,3 +124,4 @@ Every automatic search: when it ran (Irish time), how it ended, and what it foun
 | 14 Oct 2026 02:58 | 02:59 | Lead feeder (new information for the searches) | success | Lead feeder: 9 new leads (9 phrases, 0 list pages, 0 servers) |
 | 14 Oct 2026 03:08 | 03:09 | Work on bot-tasks | success | - |
 | 14 Oct 2026 06:23 | 06:27 | Find open-source jobs | success | Job shortlist: 0 found (updated 14 Oct 06:27) |
+| 14 Oct 2026 07:00 | 07:01 | Find recruiting VTCs | success | VTC shortlist: 0 recruiting (updated 14 Oct 07:01) |
