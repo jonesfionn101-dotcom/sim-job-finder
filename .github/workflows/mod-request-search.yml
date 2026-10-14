@@ -1,0 +1,27 @@
+name: Mod request search
+
+on:
+  schedule:
+    # Every hour, a different slice of searches, until a server turns up.
+    - cron: "25 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  search:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - id: search
+        run: echo "found=$(node mod-request-search.mjs)" >> "$GITHUB_OUTPUT"
+      - name: Post the results as an issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash .github/post-latest.sh "Mod request servers" "${{ steps.search.outputs.found }} found" body.md
