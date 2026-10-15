@@ -160,3 +160,4 @@ Every automatic search: when it ran (Irish time), how it ended, and what it foun
 | 15 Oct 2026 08:33 | 08:35 | Lead feeder (new information for the searches) | success | Search log: Find open-source jobs success |
 | 15 Oct 2026 11:22 | 11:26 | Find open-source jobs | success | Job shortlist: 2 found (updated 15 Oct 11:26) |
 | 15 Oct 2026 13:06 | 13:06 | Work on bot-tasks | success | - |
+| 15 Oct 2026 13:07 | 13:08 | Rules job search | cancelled | Community search: 0 hiring (updated 13 Oct 18:14);App project search: 2 found (updated 15 Oct 13:07);UK VTC search: 0 found, 10+ staff (updated 09 Oct 16:37) |
