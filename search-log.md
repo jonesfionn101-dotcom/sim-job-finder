@@ -151,3 +151,4 @@ Every automatic search: when it ran (Irish time), how it ended, and what it foun
 | 15 Oct 2026 01:56 | 02:03 | Find open-source jobs | success | Job shortlist: 1 found (updated 15 Oct 02:02) |
 | 15 Oct 2026 02:03 | 02:03 | Clear-out (save everything first) | success | - |
 | 15 Oct 2026 02:33 | 02:35 | Lead feeder (new information for the searches) | success | Lead feeder: 1 new leads (0 phrases, 0 list pages, 1 servers) |
+| 15 Oct 2026 02:43 | 02:44 | Find recruiting VTCs | success | VTC shortlist: 0 recruiting (updated 15 Oct 02:43) |
