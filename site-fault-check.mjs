@@ -38,9 +38,12 @@ for (const site of SITES) {
   if (site.group !== group) out.push(`## ${group = site.group}`, "", "One ticket per fault, in that server.", "");
   out.push(`### ${site.name} (${site.url})`, `- Discord: ${site.discord}`);
   let html = "";
-  try { html = await get(site.url).then(r => r.ok ? r.text() : ""); } catch {}
+  // Links are relative to where the homepage ENDS UP after redirects (e.g. /v3/), not the
+  // address we asked for - getting this wrong reported working pages as 404 (UpBeat, 16 Oct 2026).
+  let base = site.url;
+  try { html = await get(site.url).then(r => { base = r.url || site.url; return r.ok ? r.text() : ""; }); } catch {}
   if (!html) { faults++; out.push("- ❌ Homepage did not load.", ""); continue; }
-  const links = [...new Set([...html.matchAll(/href="([^"#]+)"/g)].map(m => new URL(m[1], site.url).href))]
+  const links = [...new Set([...html.matchAll(/href="([^"#]+)"/g)].map(m => new URL(m[1], base).href))]
     .filter(u => u.startsWith("http") && !IGNORE.test(u)).slice(0, 60);
   const broken = [];
   for (const link of links) {
